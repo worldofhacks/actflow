@@ -1,0 +1,30 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# env & secrets — never commit
+.env
+.env.*
+!.env.example
+.gcp-sa.json
+*.pem
+*.key
+
+# build output
+dist/
+build/
+.next/
+.turbo/
+out/
+coverage/
+artifacts/
+cache/
+typechain-types/
+
+# misc
+.DS_Store
+*.log
+*.pid
+
+# pending sanitization before publishing (references private-repo secret locations)
+docs/hackathon/CONTRACTS-DIFF.md
