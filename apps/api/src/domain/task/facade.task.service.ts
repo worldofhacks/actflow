@@ -3,7 +3,8 @@
 import { NewTaskParams, TaskState } from '../../contracts';
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { ethers } from 'ethers';
-import { ObjectId } from 'mongoose';
+import { Types } from 'mongoose';
+type ObjectId = Types.ObjectId;
 import { RetryService } from '../../common/retry.service';
 import { ContractsConfig } from '../../marketplace/config/contracts.config';
 import { ContractClient } from '../../marketplace/market.rpc.client';

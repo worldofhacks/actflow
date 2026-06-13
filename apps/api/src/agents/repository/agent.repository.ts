@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, ObjectId, PopulateOptions, UpdateQuery } from 'mongoose';
+import { FilterQuery, Model, Types, PopulateOptions, UpdateQuery } from 'mongoose';
+type ObjectId = Types.ObjectId;
 import { BaseRepository } from '../../common/services/base.repository';
 import { AgentStatisticsDocument } from '../schemas/agent-statistics.schema';
 import { AgentDocument, PopulatedAgentDocument } from '../schemas/agent.schema';

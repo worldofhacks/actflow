@@ -1,6 +1,7 @@
 import { MarketLibAgentInfo, TaskState } from '../../contracts';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { FilterQuery, ObjectId } from 'mongoose';
+import { FilterQuery, Types } from 'mongoose';
+type ObjectId = Types.ObjectId;
 import { EventMapper } from '../../blockchain/event.mapper';
 import { BlockchainEventRepository } from '../../blockchain/repository/events.repository';
 import { PopulatedTaskDocument } from '../../task/schemas/task.schema';

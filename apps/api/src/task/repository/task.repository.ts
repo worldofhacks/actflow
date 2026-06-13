@@ -1,7 +1,8 @@
 import { TaskState } from '../../contracts';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, ObjectId, UpdateQuery } from 'mongoose';
+import { FilterQuery, Model, Types, UpdateQuery } from 'mongoose';
+type ObjectId = Types.ObjectId;
 import { BaseRepository } from '../../common/services/base.repository';
 import { PopulatedTaskDocument, TaskDocument } from '../schemas/task.schema';
 

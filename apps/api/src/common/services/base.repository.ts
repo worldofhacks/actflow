@@ -3,7 +3,8 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Document, FilterQuery, Model, ObjectId, UpdateQuery } from 'mongoose';
+import { Document, FilterQuery, Model, Types, UpdateQuery } from 'mongoose';
+type ObjectId = Types.ObjectId;
 
 export abstract class BaseRepository<T extends Document> {
   constructor(protected readonly model: Model<T>) {}

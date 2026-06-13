@@ -189,7 +189,7 @@ export class UserService {
   }
 
   async getUserProfile(user: Partial<UserDocument>): Promise<UserDocument> {
-    return this.getUserById(user._id as string);
+    return this.getUserById(user._id.toString());
   }
 
   async getAllUsers(): Promise<UserDocument[]> {

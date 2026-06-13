@@ -1,6 +1,7 @@
 // task-state-machine.ts
 import { TaskState } from '../../../contracts';
-import { ObjectId } from 'mongoose';
+import { Types } from 'mongoose';
+type ObjectId = Types.ObjectId;
 import { TaskService } from '../../../task/services/task.service';
 
 export const validTaskTransitions = {

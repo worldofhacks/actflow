@@ -1,6 +1,7 @@
 import { TaskState } from '../../contracts';
 import { Injectable, Logger } from '@nestjs/common';
-import { ObjectId } from 'mongoose';
+import { Types } from 'mongoose';
+type ObjectId = Types.ObjectId;
 import { AgentTopicMapper as AgentSkillMapper } from '../../agents/mappers/agent-topic.mapper';
 import { TransactionInfoDocument } from '../../agents/schemas/transaction-info.schema';
 import { AgentService } from '../../agents/services/agent.service';
