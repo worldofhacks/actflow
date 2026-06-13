@@ -1,0 +1,25 @@
+{
+  "name": "@actflow/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the ActFlow marketplace contracts: ABIs, event signatures, types and chain config helpers (viem-friendly)",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "echo \"no tests yet\"",
+    "lint": "echo \"no lint configured\""
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
+}
