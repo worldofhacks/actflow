@@ -9,8 +9,8 @@ Status legend: 🔲 not started · 🟡 in progress · ✅ demo-ready · ⛔ blo
 | ENS pool | $6K split | 🔲 | (same) | |
 | Google Cloud ERC-8004 | $5K | 🟡 | BigQuery as core query layer over Ethereum mainnet ERC-8004 data; official EF registry addresses; lightweight frontend on top | |
 | Uniswap API | $7K | 🟡 | Valid API key from Uniswap Developer Platform; API used for core functionality; submit developer feedback form | |
-| Arc Agentic Nanopayments | $3.25K | 🔲 | Agent-to-agent gas-free USDC micropayments on Arc; working frontend + backend; architecture diagram; video; repo link | |
-| Privy Agent Wallet | $1.7K | 🔲 | Privy Agent Wallet CLI; agent performs ≥1 onchain action; demo shows agent using wallet/moving assets; written Privy-usage explanation | |
+| Arc Agentic Nanopayments | $3.25K | 🟡 | Agent-to-agent gas-free USDC micropayments on Arc; working frontend + backend; architecture diagram; video; repo link | |
+| Privy Agent Wallet | $1.7K | 🟡 | Privy Agent Wallet CLI; agent performs ≥1 onchain action; demo shows agent using wallet/moving assets; written Privy-usage explanation | |
 | World Track C | $2.5K | 🟡 | Existing product ✓; meaningful World ID integration; proof verification in BACKEND or contract; writeup of weekend additions | |
 | Unlink Continuity | $1K | 🔲 | @unlink-xyz/sdk in existing project; ≥1 private primitive; demo shows existing flow running privately; README before/after | |
 
@@ -38,6 +38,8 @@ Status legend: 🔲 not started · 🟡 in progress · ✅ demo-ready · ⛔ blo
 | 2026-06-13 | ERC-8004 reputation service live (fixture) | services/reputation 35/35 tests; SQL pinned to verified registry addrs/topic0; /leaderboard ranks agents w/ scores+x402+validations; flips to live BigQuery on GCP creds |
 
 | 2026-06-13 | World ID server-side verify + trials | apps/api /world/verify (v4 cloud verify, server-only); nullifier WorldTrial store credits 3/human, no re-credit; 11 tests; IDKit v4 widget + server-signed rp_context in hire flow |
+
+| 2026-06-13 | Arc + x402 + Privy payments | arcTestnet chain live (5042002); ActMarketplaceEVM deploy script w/ USDC escrow (local-deploy test); @actflow/integrations-x402 EIP-3009 (29 tests) + Privy wallet provider (22 tests); api /payments/hire->402->settle->receipt (19 tests); web hire flow. Live settle gated on Arc faucet USDC + Privy app-id (labeled mock mode otherwise). |
 
 ## Tx-hash log
 
