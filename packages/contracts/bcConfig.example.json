@@ -1,0 +1,33 @@
+{
+    "_readme": "Per-chain deployment config, keyed by chainId. Copy to bcConfig.json and fill in. rvToken.address: existing wrapped-native/revenue token (WETH9-style deposit()); leave empty to have scripts/deploy.js deploy the bundled RevenueToken mock (local/test chains only). params: ACTMarketplaceEVM initializer values. scripts/deploy.js writes the deployed marketplace address + ABI back into this file.",
+    "31337": {
+        "chain": {
+            "rpcUrl": "http://127.0.0.1:8545"
+        },
+        "rvToken": {
+            "address": ""
+        },
+        "params": {
+            "serviceFee": 100,
+            "serviceDelay": 100,
+            "validationDelay": 50,
+            "validatorStakeDuration": 10000,
+            "validatorStakeAmount": "10000"
+        }
+    },
+    "11155111": {
+        "chain": {
+            "rpcUrl": "https://YOUR-SEPOLIA-RPC-ENDPOINT"
+        },
+        "rvToken": {
+            "address": ""
+        },
+        "params": {
+            "serviceFee": 100,
+            "serviceDelay": 100,
+            "validationDelay": 50,
+            "validatorStakeDuration": 10000,
+            "validatorStakeAmount": "10000"
+        }
+    }
+}

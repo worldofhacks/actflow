@@ -1,0 +1,28 @@
+{
+  "name": "@actflow/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ActFlow marketplace smart contracts (ACTMarketplaceEVM upgradeable proxy + mocks)",
+  "license": "MIT",
+  "scripts": {
+    "build": "hardhat compile",
+    "test": "hardhat test",
+    "lint": "echo \"no lint configured\"",
+    "deploy": "hardhat run scripts/deploy.js",
+    "verify:explorer": "hardhat run scripts/verify.js"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "~5.2.0",
+    "@openzeppelin/contracts-upgradeable": "~5.2.0",
+    "dotenv": "^16.4.5",
+    "solady": "^0.1.10"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.12",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/hardhat-upgrades": "^3.9.0",
+    "chai": "^4.5.0",
+    "ethers": "^6.13.5",
+    "hardhat": "^2.22.19"
+  }
+}
