@@ -20,6 +20,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const distPayments = path.join(here, '..', 'dist', 'payments');
 
 const { PaymentsService } = require(path.join(distPayments, 'payments.service.js'));
+// GAP 4: the BINDING task-unlock adapter — ties a verified payment / trial into the task flow.
+const { TaskUnlockService } = require(path.join(distPayments, 'task-unlock.service.js'));
 // The Arc chain + USDC config the service reads via @actflow/sdk (CommonJS).
 const sdk = require('@actflow/sdk');
 // The ESM x402 package — used here only to sign a MOCK payload for the settle tests.
@@ -89,6 +91,44 @@ function fakeWorld(outcome) {
 
 function newService({ config, repo, world } = {}) {
   return new PaymentsService(config ?? fakeConfig(), repo ?? fakeRepo(), world ?? fakeWorld({ consumed: false, paymentRequired: true, freeTrialsRemaining: 0 }));
+}
+
+/**
+ * In-memory TaskService stub mirroring the surface TaskUnlockService consumes:
+ *   unlockTask(taskId, {method,mock})        -> mongo id (or null when no task exists)
+ *   attachUnlockReceipt(taskMongoId, receiptId)
+ * Seed with `existing` task ids; unlocking flips `unlocked:true` and records method/mock and,
+ * later, the receipt id. An unseeded resource returns null (no binding).
+ */
+function fakeTaskService(existing = ['task:42']) {
+  const tasks = new Map();
+  let n = 0;
+  for (const taskId of existing) {
+    tasks.set(taskId, {
+      _id: `mongo-${++n}`,
+      taskId,
+      unlocked: false,
+      unlockMethod: undefined,
+      unlockMock: undefined,
+      unlockReceiptId: undefined,
+    });
+  }
+  return {
+    tasks,
+    async unlockTask(taskId, data) {
+      const t = tasks.get(taskId);
+      if (!t) return null;
+      t.unlocked = true;
+      t.unlockMethod = data.method;
+      t.unlockMock = data.mock;
+      // Return an ObjectId-like with toString().
+      return { toString: () => t._id, _id: t._id };
+    },
+    async attachUnlockReceipt(taskMongoId, receiptId) {
+      const id = taskMongoId.toString();
+      for (const t of tasks.values()) if (t._id === id) t.unlockReceiptId = receiptId;
+    },
+  };
 }
 
 // --- 402 challenge shape -------------------------------------------------------------
@@ -296,4 +336,108 @@ test('listReceipts returns history by agent/payer (newest first) and getReceipt 
 test('listReceipts requires at least one filter (payer/agent/user)', async () => {
   const svc = newService();
   await assert.rejects(() => svc.listReceipts({}));
+});
+
+// --- GAP 4: BINDING unlock — a settled / trial task is ACTUALLY unlocked ---------------
+
+test('settle BINDS the task: a mock-verified payment marks the task unlocked + funded (not just a receipt)', async () => {
+  const repo = fakeRepo();
+  const svc = newService({ repo });
+  const taskSvc = fakeTaskService(['task:42']);
+  const hook = new TaskUnlockService(taskSvc).hook();
+
+  const hire = await svc.hire({ agentAddress: AGENT, resource: 'task:42', price: '0.10' });
+  const payload = await x402.signPaymentAuthorization(
+    { getAddress: async () => PAYER },
+    hire.challenge,
+    { forceMock: true },
+  );
+
+  const res = await svc.settle({ challenge: hire.challenge, payload }, hook);
+
+  // The payment verified AND the marketplace-side binding decision is real.
+  assert.equal(res.paid, true);
+  assert.equal(res.unlocked, true, 'binding decision: task was actually unlocked');
+  assert.equal(res.taskId, 'mongo-1', 'returns the unlocked task mongo id');
+
+  // The TASK RECORD itself was mutated — not just a receipt written.
+  const task = taskSvc.tasks.get('task:42');
+  assert.equal(task.unlocked, true, 'task record flipped to unlocked/funded');
+  assert.equal(task.unlockMethod, 'x402');
+  assert.equal(task.unlockMock, true);
+
+  // The receipt is tied back onto the task (audit) and the receipt points at the task.
+  assert.equal(repo.store.length, 1);
+  assert.equal(task.unlockReceiptId, res.receipt.id, 'receipt id stamped on the task');
+  assert.equal(res.receipt.taskId, 'mongo-1', 'receipt points at the unlocked task');
+});
+
+test('hire world-trial BINDS the task: a free trial actually unlocks it (method world-trial)', async () => {
+  const repo = fakeRepo();
+  const world = fakeWorld({ consumed: true, paymentRequired: false, freeTrialsRemaining: 3 });
+  const svc = newService({ repo, world });
+  const taskSvc = fakeTaskService(['task:free']);
+  const hook = new TaskUnlockService(taskSvc).hook();
+
+  const res = await svc.hire(
+    { agentAddress: AGENT, resource: 'task:free', worldNullifier: '0xhuman', worldAction: 'free-trial' },
+    hook,
+  );
+
+  assert.equal(res.status, 200);
+  assert.equal(res.unlocked, true, 'binding decision: free task unlocked');
+  assert.equal(res.taskId, 'mongo-1');
+
+  const task = taskSvc.tasks.get('task:free');
+  assert.equal(task.unlocked, true, 'task record unlocked via world-trial');
+  assert.equal(task.unlockMethod, 'world-trial');
+  assert.equal(task.unlockMock, true);
+  assert.equal(task.unlockReceiptId, res.receipt.id, 'receipt id stamped on the task');
+});
+
+test('an UNPAID task is NOT unlocked: failed verification leaves the task locked + no receipt', async () => {
+  const repo = fakeRepo();
+  const svc = newService({ repo });
+  const taskSvc = fakeTaskService(['task:9']);
+  const hook = new TaskUnlockService(taskSvc).hook();
+
+  const hire = await svc.hire({ agentAddress: AGENT, resource: 'task:9', price: '0.05' });
+  const payload = await x402.signPaymentAuthorization(
+    { getAddress: async () => PAYER },
+    hire.challenge,
+    { forceMock: true },
+  );
+  // Tamper -> verification fails -> the task must stay locked.
+  const tampered = { ...payload, authorization: { ...payload.authorization, value: '999' } };
+
+  const res = await svc.settle({ challenge: hire.challenge, payload: tampered }, hook);
+
+  assert.equal(res.paid, false);
+  assert.equal(res.unlocked, false, 'unpaid task is NOT unlocked');
+  const task = taskSvc.tasks.get('task:9');
+  assert.equal(task.unlocked, false, 'task record stays locked when unpaid');
+  assert.equal(task.unlockMethod, undefined);
+  assert.equal(repo.store.length, 0, 'no receipt for a failed payment');
+});
+
+test('settle reports unlocked:false (but still writes a receipt) when no task exists yet for the resource', async () => {
+  const repo = fakeRepo();
+  const svc = newService({ repo });
+  const taskSvc = fakeTaskService([]); // no tasks seeded
+  const hook = new TaskUnlockService(taskSvc).hook();
+
+  const hire = await svc.hire({ agentAddress: AGENT, resource: 'task:later', price: '0.05' });
+  const payload = await x402.signPaymentAuthorization(
+    { getAddress: async () => PAYER },
+    hire.challenge,
+    { forceMock: true },
+  );
+
+  const res = await svc.settle({ challenge: hire.challenge, payload }, hook);
+
+  assert.equal(res.paid, true, 'payment still verified');
+  assert.equal(res.unlocked, false, 'nothing to bind -> not unlocked');
+  assert.equal(res.taskId, undefined);
+  assert.equal(repo.store.length, 1, 'receipt is still written');
+  assert.equal(res.receipt.taskId, undefined);
 });

@@ -94,6 +94,34 @@ export class TaskDocument extends Document {
   resultData?: string;
 
   //------------------------------------------------------
+  // Payment Unlock (x402 / World free-trial) — GAP 4
+  //------------------------------------------------------
+
+  /**
+   * Whether this task has been UNLOCKED by a verified x402 payment or a consumed World ID
+   * free trial. An unpaid task stays `false` and does not proceed; a paid/trial-unlocked
+   * task is `true`. This is the binding marketplace-side decision tied to the receipt below.
+   */
+  @Prop({ type: Boolean, default: false, required: false })
+  unlocked: boolean;
+
+  /** How the task was unlocked: 'x402' (paid) or 'world-trial' (free trial). */
+  @Prop({ type: String, required: false })
+  unlockMethod?: 'x402' | 'world-trial';
+
+  /** Whether the unlock was a labeled MOCK (no real on-chain settlement). */
+  @Prop({ type: Boolean, required: false })
+  unlockMock?: boolean;
+
+  /** Mongo id of the PaymentReceipt that unlocked this task (audit tie-back). */
+  @Prop({ type: String, required: false })
+  unlockReceiptId?: string;
+
+  /** When the task was unlocked. */
+  @Prop({ type: Date, required: false })
+  unlockedAt?: Date;
+
+  //------------------------------------------------------
   // Task Lifecycle Events
   //------------------------------------------------------
   @Prop({ type: Date })

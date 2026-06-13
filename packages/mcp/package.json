@@ -16,7 +16,7 @@
     "dev": "tsc --watch",
     "start": "node dist/index.js",
     "inspector": "npx @modelcontextprotocol/inspector node dist/index.js",
-    "test": "echo \"no tests yet\"",
+    "test": "tsc -p tsconfig.test.json && node --test \"dist-test/tools/*.test.js\"",
     "lint": "echo \"no lint configured\""
   },
   "dependencies": {

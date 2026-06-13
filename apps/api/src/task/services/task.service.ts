@@ -31,6 +31,29 @@ export class TaskService {
     return this.taskRepository.findIdByField('taskId', taskId);
   }
 
+  /**
+   * GAP 4 — BIND a successful payment / World free-trial to the marketplace task: mark the
+   * task UNLOCKED (funded) so it can proceed. Tied to the payment receipt for audit. An
+   * unpaid task is never unlocked. Returns the mongo id of the unlocked task, or null if no
+   * task exists for the taskId yet (e.g. it is created on-chain after payment).
+   */
+  async unlockTask(
+    taskId: string,
+    data: { method: 'x402' | 'world-trial'; mock: boolean; receiptId?: string },
+  ): Promise<ObjectId | null> {
+    const updated = await this.taskRepository.markUnlocked(taskId, data);
+    if (!updated) return null;
+    this.logger.log(
+      `task ${taskId} UNLOCKED via ${data.method}${data.mock ? ' (mock)' : ''} -> ${updated._id}`,
+    );
+    return updated._id as ObjectId;
+  }
+
+  /** Tie a PaymentReceipt id back onto an already-unlocked task (audit). */
+  async attachUnlockReceipt(taskMongoId: ObjectId, receiptId: string): Promise<void> {
+    await this.taskRepository.attachUnlockReceipt(taskMongoId, receiptId);
+  }
+
   //TODO: this one delete
   findPopulatedById = (mongoId: ObjectId) => {
     return this.taskRepository.findPopulatedById(mongoId);

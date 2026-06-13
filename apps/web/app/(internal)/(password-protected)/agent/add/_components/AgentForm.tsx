@@ -1,12 +1,14 @@
 'use client';
 import { AgentType } from '@/types/agent/agent-type';
 import { Wallet } from '@/types/user/wallet';
+import { ProvisionResult } from '@/types/provisioning';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { AgentActionButtons } from './AgentActionButtons';
 import { AgentFormControls } from './AgentFormControls';
+import { AgentProvisionResult } from './AgentProvisionResult';
 import { AgentTypeSelector } from './AgentTypeSelector';
 
 interface AgentFormProps {
@@ -37,7 +39,16 @@ const agentFormSchema = z.object({
 
 export type AgentFormValues = z.infer<typeof agentFormSchema>;
 
+/** The completed agent + its provisioned identity, shown as the confirmation step. */
+export interface AgentProvisionedState {
+  /** Provisioning result from POST /agents/provision (identity preview or bound). */
+  result: ProvisionResult;
+  /** Route to the new agent's ENS-powered profile (/agent/[id]). */
+  profileHref: string;
+}
+
 const AgentForm = ({ initialAgentType, wallets, topics }: AgentFormProps) => {
+  const [provisioned, setProvisioned] = useState<AgentProvisionedState | null>(null);
   const form = useForm<AgentFormValues>({
     resolver: zodResolver(agentFormSchema),
     defaultValues: {
@@ -78,13 +89,28 @@ const AgentForm = ({ initialAgentType, wallets, topics }: AgentFormProps) => {
     form.setValue('profileType', initialAgentType);
   }, [initialAgentType, form]);
 
+  // Confirmation step: once the agent is created AND its identity provisioned,
+  // replace the form with the identity result (preview vs live, profile link).
+  if (provisioned) {
+    return (
+      <div className="mt-4 flex w-full justify-center">
+        <div className="w-full max-w-2xl">
+          <AgentProvisionResult
+            result={provisioned.result}
+            profileHref={provisioned.profileHref}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <FormProvider {...form}>
       <AgentTypeSelector initialAgentType={initialAgentType} />
       <div className="grid grid-cols-1 mt-4 lg:grid-cols-3 gap-4 w-full">
         <AgentFormControls agentType={initialAgentType} wallets={wallets} topics={topics} />
         <div className="col-span-2 lg:col-span-3 mt-6">
-          <AgentActionButtons agentType={initialAgentType} />
+          <AgentActionButtons agentType={initialAgentType} onProvisioned={setProvisioned} />
         </div>
       </div>
     </FormProvider>

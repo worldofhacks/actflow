@@ -12,6 +12,9 @@
       "import": "./dist/index.js"
     }
   },
+  "bin": {
+    "actflow-register-agents": "dist/scripts/register-first-party-agents.js"
+  },
   "files": [
     "dist"
   ],
@@ -30,6 +33,7 @@
     "@actflow/mcp": "workspace:*",
     "@mastra/core": "^1.42.0",
     "@mastra/mcp": "^1.10.0",
+    "viem": "^2.52.2",
     "zod": "^4.0.0",
     "@actflow/sdk": "workspace:*"
   },

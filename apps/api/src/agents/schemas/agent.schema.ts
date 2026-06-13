@@ -36,6 +36,30 @@ export class AgentDocument extends Document {
   licenseTermsId: string;
 
   //------------------------------------------------------
+  // Agent Identity (ENS + ERC-8004) — set by provisioning
+  //------------------------------------------------------
+
+  /** Full ENS name `<slug>.<parent>` from provisionAgent (undefined until provisioned). */
+  @Prop({ type: String, required: false })
+  ensName?: string;
+
+  /** namehash(ensName) — bytes32 node bound on-chain via AgentIdentityExtension. */
+  @Prop({ type: String, required: false })
+  ensNode?: string;
+
+  /** ERC-8004 IdentityRegistry agent id (decimal string) once registered/dry-run. */
+  @Prop({ type: String, required: false })
+  erc8004Id?: string;
+
+  /**
+   * Identity provisioning status:
+   *  - 'dry-run'   : preview only (no funds/creds) — identity NOT bound on-chain.
+   *  - 'bound'     : AgentIdentityExtension.setIdentity executed on-chain.
+   */
+  @Prop({ type: String, required: false })
+  identityStatus?: 'dry-run' | 'bound';
+
+  //------------------------------------------------------
   // Agent Parameters
   //------------------------------------------------------
 

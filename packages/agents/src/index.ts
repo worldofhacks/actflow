@@ -127,3 +127,30 @@ export {
   type RegisterEnsIdentityOptions,
   type RegisterEnsIdentityResult,
 } from "./identity/register-ens-identity.js";
+
+// ERC-8004 IdentityRegistry registration (mint agent identity NFT). Config-driven
+// registry/chain (env ERC8004_IDENTITY_REGISTRY + ERC8004_CHAIN_ID, default Arc
+// Testnet 5042002). DRY-RUN safe: returns calldata WITHOUT a tx when no wallet/
+// registry. Addresses cited from the erc8004-bigquery skill — never invented.
+export {
+  registerErc8004,
+  DEFAULT_ERC8004_CHAIN_ID,
+  KNOWN_IDENTITY_REGISTRIES,
+  IDENTITY_REGISTRY_REGISTER_ABI,
+  ERC8004_REGISTERED_TOPIC0,
+  type Erc8004WalletClientLike,
+  type RegisterErc8004Input,
+  type RegisterErc8004Options,
+  type RegisterErc8004Result,
+} from "./identity/register-erc8004.js";
+
+// Full agent identity provisioning: registerErc8004 + registerEnsIdentity +
+// the AgentIdentityExtension.setIdentity(ensNode, erc8004Id, ensName) args.
+// Fully dry-run/mock-safe (no funds/creds required).
+export {
+  provisionAgent,
+  type ProvisionAgentInput,
+  type ProvisionAgentOptions,
+  type ProvisionAgentResult,
+  type IdentityExtensionCall,
+} from "./identity/provision-agent.js";

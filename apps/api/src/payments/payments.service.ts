@@ -28,7 +28,10 @@ export interface HirePaymentRequired {
 export interface HireFreeUnlock {
   status: 200;
   method: 'world-trial';
-  unlocked: true;
+  /** The BINDING decision: true => the task record was actually marked unlocked/funded. */
+  unlocked: boolean;
+  /** Mongo id of the task that was unlocked (when one exists for the resource). */
+  taskId?: string;
   freeTrialsRemaining: number;
   receipt: ReceiptView;
 }
@@ -38,7 +41,10 @@ export type HireResult = HirePaymentRequired | HireFreeUnlock;
 /** The result of settling an x402 payment. */
 export interface SettleResult {
   paid: boolean;
+  /** The BINDING decision: true => the task record was actually marked unlocked/funded. */
   unlocked: boolean;
+  /** Mongo id of the task that was unlocked (when one exists for the resource). */
+  taskId?: string;
   /** Carried straight from verifyPayment — true => labeled MOCK, never a real payment. */
   mock: boolean;
   txHash?: string;
@@ -84,14 +90,39 @@ export interface SettleParams {
   userId?: string;
 }
 
-/** Optional hook so a task can be created/unlocked when payment (or a trial) succeeds. */
-export type UnlockTaskHook = (ctx: {
+/** Context handed to the unlock hook for a verified payment / consumed free trial. */
+export interface UnlockTaskContext {
   resource: string;
   agent: string;
   payer: string;
   method: 'x402' | 'world-trial';
   mock: boolean;
-}) => Promise<string | undefined> | string | undefined;
+}
+
+/**
+ * Outcome of binding a payment to a task. `taskId` is the mongo id of the task that was
+ * actually unlocked (undefined if no task exists yet for the resource). `unlocked` reflects
+ * the BINDING decision (true => the task record was marked unlocked/funded). `attachReceipt`,
+ * when present, ties the just-written receipt id back onto the task for audit.
+ */
+export interface UnlockTaskResult {
+  taskId?: string;
+  unlocked: boolean;
+  attachReceipt?: (receiptId: string) => Promise<void> | void;
+}
+
+/**
+ * Optional hook so a task is actually created/unlocked when a payment (or a trial) succeeds.
+ * May return just a mongo task id (legacy) or a richer UnlockTaskResult (binding decision +
+ * receipt tie-back).
+ */
+export type UnlockTaskHook = (
+  ctx: UnlockTaskContext,
+) =>
+  | Promise<string | UnlockTaskResult | undefined>
+  | string
+  | UnlockTaskResult
+  | undefined;
 
 @Injectable()
 export class PaymentsService {
@@ -149,7 +180,7 @@ export class PaymentsService {
         params.worldAction,
       );
       if (consume.consumed) {
-        const taskId = await this.runUnlock(unlockTask, {
+        const unlock = await this.runUnlock(unlockTask, {
           resource: params.resource,
           agent: recipient,
           payer: params.worldNullifier,
@@ -165,13 +196,16 @@ export class PaymentsService {
           chainId: this.config.chainId,
           mock: true,
           resource: params.resource,
-          taskId,
+          taskId: unlock.taskId,
           userId: params.userId,
         });
+        // Tie the just-written receipt back onto the unlocked task (audit).
+        await this.bindReceipt(unlock, doc._id.toString());
         return {
           status: 200,
           method: 'world-trial',
-          unlocked: true,
+          unlocked: unlock.unlocked,
+          taskId: unlock.taskId,
           freeTrialsRemaining: consume.freeTrialsRemaining,
           receipt: this.toView(doc),
         };
@@ -231,7 +265,7 @@ export class PaymentsService {
     const mock = result.mock === true;
     const payer = result.payer ?? payload.authorization.from;
 
-    const taskId = await this.runUnlock(unlockTask, {
+    const unlock = await this.runUnlock(unlockTask, {
       resource,
       agent: challenge.recipient,
       payer,
@@ -254,13 +288,19 @@ export class PaymentsService {
       mock,
       explorerUrl,
       resource,
-      taskId,
+      taskId: unlock.taskId,
       userId: params.userId,
     });
 
+    // Tie the just-written receipt back onto the unlocked task (audit).
+    await this.bindReceipt(unlock, doc._id.toString());
+
     return {
       paid: true,
-      unlocked: true,
+      // The BINDING decision: the task was actually marked unlocked/funded (true) or no task
+      // existed yet for the resource (false — receipt still written).
+      unlocked: unlock.unlocked,
+      taskId: unlock.taskId,
       mock,
       txHash: result.txHash,
       explorerUrl,
@@ -268,27 +308,41 @@ export class PaymentsService {
     };
   }
 
-  /** Run the optional task-unlock hook, swallowing failures (receipt is still written). */
+  /** Tie the just-written receipt id back onto the task record (non-fatal). */
+  private async bindReceipt(unlock: UnlockTaskResult, receiptId: string): Promise<void> {
+    if (!unlock.attachReceipt) return;
+    try {
+      await unlock.attachReceipt(receiptId);
+    } catch (err) {
+      this.logger.warn(
+        `attachReceipt failed for receipt ${receiptId}: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Run the optional task-unlock hook, normalizing its result. Swallows failures (the receipt
+   * is still written) but returns the binding decision so callers can surface `unlocked`.
+   */
   private async runUnlock(
     unlockTask: UnlockTaskHook | undefined,
-    ctx: {
-      resource: string;
-      agent: string;
-      payer: string;
-      method: 'x402' | 'world-trial';
-      mock: boolean;
-    },
-  ): Promise<string | undefined> {
-    if (!unlockTask) return undefined;
+    ctx: UnlockTaskContext,
+  ): Promise<UnlockTaskResult> {
+    if (!unlockTask) return { unlocked: false };
     try {
-      return await unlockTask(ctx);
+      const out = await unlockTask(ctx);
+      if (out === undefined || out === null) return { unlocked: false };
+      if (typeof out === 'string') return { taskId: out, unlocked: true };
+      return out;
     } catch (err) {
       this.logger.warn(
         `unlock task hook failed for resource ${ctx.resource}: ${
           err instanceof Error ? err.message : String(err)
         }`,
       );
-      return undefined;
+      return { unlocked: false };
     }
   }
 

@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AgentModule } from './agents/agent.module';
+import { ProvisioningModule } from './agents/provisioning/provisioning.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -38,6 +39,7 @@ import { WorldModule } from './world/world.module';
     UserModule,
     AuthModule,
     AgentModule,
+    ProvisioningModule,
     WalletModule,
     MarketplaceModule,
     TaskModule,

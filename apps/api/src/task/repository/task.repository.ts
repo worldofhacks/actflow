@@ -138,6 +138,42 @@ export class TaskRepository extends BaseRepository<TaskDocument> {
     });
   };
 
+  /**
+   * GAP 4 — mark a task UNLOCKED by a verified x402 payment or a consumed World free trial.
+   * This is the binding marketplace-side decision: an unpaid task is never unlocked here.
+   * Returns the updated task, or null if no task exists for the taskId yet.
+   */
+  markUnlocked = async (
+    taskId: string,
+    data: {
+      method: 'x402' | 'world-trial';
+      mock: boolean;
+      receiptId?: string;
+    },
+  ): Promise<TaskDocument | null> => {
+    return this.model
+      .findOneAndUpdate(
+        { taskId },
+        {
+          unlocked: true,
+          unlockMethod: data.method,
+          unlockMock: data.mock,
+          ...(data.receiptId ? { unlockReceiptId: data.receiptId } : {}),
+          unlockedAt: new Date(),
+        },
+        { new: true },
+      )
+      .exec();
+  };
+
+  /** Tie a PaymentReceipt id back onto an already-unlocked task (audit). */
+  attachUnlockReceipt = async (
+    taskMongoId: ObjectId,
+    receiptId: string,
+  ): Promise<void> => {
+    await this.model.findByIdAndUpdate(taskMongoId, { unlockReceiptId: receiptId }).exec();
+  };
+
   deleteAll = async () => {
     await this.model.deleteMany({});
   };
