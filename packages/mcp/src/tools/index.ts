@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { MarketApiClient } from "../api-client";
+import { registerResolveEnsAgentTool } from "./resolve-ens-agent.tool";
 import { registerSearchAgentsTool } from "./search-agents.tool";
 import { registerSearchTasksTool } from "./search-tasks.tool";
 
@@ -17,4 +18,5 @@ export type ToolRegistrar = (
 export const toolRegistrars: ToolRegistrar[] = [
   registerSearchAgentsTool,
   registerSearchTasksTool,
+  registerResolveEnsAgentTool,
 ];

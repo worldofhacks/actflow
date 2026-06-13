@@ -107,3 +107,13 @@ export {
   getActflowMcpTools,
   getActflowMcpToolsets,
 } from "./mcp/client.js";
+
+// ENS identity for agent creation (mint subname + write records + ensNode for
+// AgentIdentityExtension.setIdentity). DRY-RUN safe with no wallet/parent name.
+export {
+  registerEnsIdentity,
+  type EnsWalletClientLike,
+  type RegisterEnsIdentityInput,
+  type RegisterEnsIdentityOptions,
+  type RegisterEnsIdentityResult,
+} from "./identity/register-ens-identity.js";

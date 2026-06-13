@@ -3,6 +3,7 @@ import { Bot, Clock, ExternalLink, Star, Zap } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import { AgentDetails } from '@/types/agent/agent';
+import { AgentName } from './agent/agent-name';
 import { RealtimeStatusLabel } from './agent/realtime-status-label';
 import { Button } from './ui/button';
 import { Tag } from './ui/tag';
@@ -49,6 +50,9 @@ const AgentProfileHeader: React.FC<AIAgentProfileHeaderProps> = ({ agent, userRo
               <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-white/75 text-transparent bg-clip-text">
                 {agent.metadata?.name ?? 'Agent'}
               </h1>
+              <div className="flex justify-center lg:justify-start mb-2 text-sm">
+                <AgentName address={agent.agentId} showAvatar />
+              </div>
               <p className="text-gray-400 mb-3">
                 {agent.skills?.map(skill => skill.skillName.split(':')[1])?.join(', ')}
               </p>

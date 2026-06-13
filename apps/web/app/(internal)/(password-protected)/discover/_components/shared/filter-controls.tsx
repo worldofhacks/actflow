@@ -11,6 +11,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
+import { looksLikeEnsName } from '@/lib/config/ens';
+import { resolveEnsNameToAddress } from '@/lib/service/ensService';
 import { AgentFilterRequest } from '@/types/agent/agent-filter';
 import { Filter, Search, Sliders } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -30,6 +32,7 @@ export const FilterControls = ({ currentFilters, categories }: FilterControlsPro
   const [searchQuery, setSearchQuery] = useState(currentFilters.name || '');
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
   const [isValidOnly, setIsValidOnly] = useState(!!currentFilters.isValid);
+  const [resolvingEns, setResolvingEns] = useState(false);
 
   // Handle debounced search for better UX
   useEffect(() => {
@@ -70,15 +73,61 @@ export const FilterControls = ({ currentFilters, categories }: FilterControlsPro
     },
     [router, searchParams, pathname],
   );
-  // Update URL when debounced search changes
+  // Resolve an ENS name typed into search to an agent address, then look the
+  // agent up directly (its address is its agentId). Returns true when handled.
+  const tryResolveEnsSearch = useCallback(
+    async (value: string): Promise<boolean> => {
+      if (!looksLikeEnsName(value)) return false;
+      setResolvingEns(true);
+      try {
+        const { address, error } = await resolveEnsNameToAddress(value);
+        if (error) {
+          toast({
+            variant: 'destructive',
+            title: 'ENS lookup failed',
+            description: error,
+          });
+          return false;
+        }
+        if (!address) {
+          toast({
+            title: 'No match',
+            description: `"${value}" did not resolve to an agent address.`,
+          });
+          return true; // recognized as an ENS name; just no result.
+        }
+        router.push(`/agent/${address}`);
+        return true;
+      } finally {
+        setResolvingEns(false);
+      }
+    },
+    [router],
+  );
+
+  // Update URL when debounced search changes. ENS names are resolved+looked up
+  // instead of being passed to the plain name filter.
   useEffect(() => {
-    if (debouncedSearch !== currentFilters.name) {
+    if (debouncedSearch === currentFilters.name) return;
+    let cancelled = false;
+    (async () => {
+      const handled = await tryResolveEnsSearch(debouncedSearch);
+      if (cancelled || handled) return;
       updateFilters('name', debouncedSearch);
-    }
-  }, [currentFilters.name, debouncedSearch, updateFilters]);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentFilters.name, debouncedSearch, updateFilters, tryResolveEnsSearch]);
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      void tryResolveEnsSearch(searchQuery);
+    }
   };
 
   const handleIsValidChange = (checked: boolean) => {
@@ -89,7 +138,7 @@ export const FilterControls = ({ currentFilters, categories }: FilterControlsPro
   return (
     <div className="mb-6 lg:mb-8 relative">
       {/* Loading Indicator */}
-      {loadingAgents && (
+      {(loadingAgents || resolvingEns) && (
         <div className="absolute right-4 top-4 z-10">
           <Icons.spinner className="h-6 w-6 animate-spin text-act-gold" />
         </div>
@@ -103,8 +152,9 @@ export const FilterControls = ({ currentFilters, categories }: FilterControlsPro
         <Input
           type="text"
           className="w-full pl-10 h-11"
-          placeholder="Search AI Agents by Name, Specialization, or Task Type"
+          placeholder="Search by Name, Specialization, Task Type, or ENS name"
           onChange={e => handleSearch(e.target.value)}
+          onKeyDown={handleSearchKeyDown}
           value={searchQuery}
         />
       </div>

@@ -23,9 +23,18 @@ export const MODEL_OVERRIDE_ENV = "ACTFLOW_AGENT_MODEL";
 /**
  * Resolve the model string for an agent:
  * explicit per-agent override > ACTFLOW_AGENT_MODEL env > DEFAULT_MODEL.
+ *
+ * Treats empty/whitespace-only values as unset (not just null/undefined), so a
+ * blank `ACTFLOW_AGENT_MODEL=` in .env — the shape shipped in .env.example —
+ * falls through to the default rather than producing an empty model string
+ * (which Mastra rejects with "LanguageModel is required to create an Agent").
  */
 export function resolveModel(override?: string): string {
-  return override ?? process.env[MODEL_OVERRIDE_ENV] ?? DEFAULT_MODEL;
+  const candidates = [override, process.env[MODEL_OVERRIDE_ENV]];
+  for (const c of candidates) {
+    if (typeof c === "string" && c.trim()) return c.trim();
+  }
+  return DEFAULT_MODEL;
 }
 
 /** True when a model-provider key is present and live LLM calls may be made. */

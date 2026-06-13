@@ -120,6 +120,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@actflow/integrations-ens':
+        specifier: workspace:*
+        version: link:../../packages/integrations/ens
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.78.0(react@19.2.7))
@@ -286,6 +289,9 @@ importers:
 
   packages/agents:
     dependencies:
+      '@actflow/integrations-ens':
+        specifier: workspace:*
+        version: link:../integrations/ens
       '@actflow/mcp':
         specifier: workspace:*
         version: link:../mcp
@@ -355,6 +361,9 @@ importers:
 
   packages/mcp:
     dependencies:
+      '@actflow/integrations-ens':
+        specifier: workspace:*
+        version: link:../integrations/ens
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@3.25.76)

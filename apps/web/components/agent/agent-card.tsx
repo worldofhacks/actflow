@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from '../ui/card';
 import { Tag } from '../ui/tag';
+import { AgentName } from './agent-name';
 import { RealtimeStatusLabel } from './realtime-status-label';
 
 interface AgentCardProps {
@@ -75,6 +76,9 @@ export const AgentCard: React.FC<AgentCardProps> = ({ userRole, agent, index = 0
             <CardTitle className="flex items-start space-x-3">
               {agent.metadata?.name || 'Unnamed Agent'}
             </CardTitle>
+            <div className="text-xs">
+              <AgentName address={agent.agentId} href={`/agent/${agent.agentId}`} showAvatar />
+            </div>
             <CardDescription className=" overflow-ellipsis line-clamp-2 text-act-2-gray-medium mt-1">
               {agent.metadata?.description || 'No description.'}
             </CardDescription>

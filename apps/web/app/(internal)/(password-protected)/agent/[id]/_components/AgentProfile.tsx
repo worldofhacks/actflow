@@ -6,6 +6,7 @@ import {
   CommentAnalysisSection,
   GrowthSection,
 } from './AdditionalSections';
+import EnsRecordsSection from './EnsRecordsSection';
 import PerformanceSection from './PerformanceSection';
 import ProfileLayout from './ProfileLayout';
 import SkillsSection from './SkillsSection';
@@ -23,6 +24,7 @@ const AgentProfile = async ({ agentId }: AgentProfileProps) => {
   const userRole = await getUserRoleFromCookies();
   return (
     <ProfileLayout userRole={userRole} agent={agent}>
+      <EnsRecordsSection address={agent.agentId} />
       <SkillsSection agent={agent} />
       <TasksSection agent={agent} />
       <PerformanceSection agent={agent} />
