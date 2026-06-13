@@ -1,0 +1,31 @@
+{
+  "name": "@actflow/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MCP server exposing the ActFlow marketplace API (read-only resources + search tools) over stdio",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "actflow-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && chmod 755 dist/index.js",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "inspector": "npx @modelcontextprotocol/inspector node dist/index.js",
+    "test": "echo \"no tests yet\"",
+    "lint": "echo \"no lint configured\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "dotenv": "^16.4.5",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.0"
+  }
+}
