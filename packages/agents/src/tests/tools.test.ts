@@ -6,7 +6,12 @@ import type {
 } from "../interfaces/marketplace-client.js";
 import { createMarketplaceTools } from "../tools/marketplace-actions.js";
 import { createWalletTools } from "../tools/wallet-actions.js";
-import { swapExecute, swapQuote } from "../tools/swap-tools.js";
+import { createSwapTools, swapExecute, swapQuote } from "../tools/swap-tools.js";
+import {
+  TradingApiClient,
+  loadUniswapConfig,
+} from "@actflow/integrations-uniswap";
+import type { IWalletProvider } from "../interfaces/wallet-provider.js";
 import { webResearch } from "../tools/research-tools.js";
 import {
   generateImage,
@@ -59,38 +64,200 @@ test("swapQuote validates input via zod", async () => {
     amountIn: "100.5",
   });
   assert.equal(parsed.success, true);
-  // default chainId applied by the schema
-  assert.equal(parsed.data?.chainId, 1);
+  // chainId is optional now (resolved at runtime from UNISWAP_SWAP_CHAIN_ID),
+  // so omitting it parses and leaves it undefined.
+  assert.equal(parsed.data?.chainId, undefined);
 });
 
-test("swapQuote / swapExecute return clearly-marked mock data", async () => {
-  const quote = await exec(swapQuote, {
+// A config with NO api key — exercises the keyless path without env mutation.
+const KEYLESS_CONFIG = loadUniswapConfig({});
+
+test("swapQuote returns { available:false } with no UNISWAP_API_KEY (no network)", async () => {
+  // Default exported tool uses loadUniswapConfig() from the ambient env. To keep
+  // this test deterministic regardless of env, drive a tool built with an
+  // explicit keyless config — no fetch can possibly run.
+  const { swapQuote: keylessQuote } = createSwapTools({
+    config: KEYLESS_CONFIG,
+  });
+  const out = await exec(keylessQuote, {
     tokenIn: "USDC",
     tokenOut: "WETH",
     amountIn: "100",
+  });
+  assert.equal(out.available, false);
+  assert.ok(/UNISWAP_API_KEY/.test(out.reason));
+  // No mock data, no fabricated amounts.
+  assert.equal(out.amountOut, undefined);
+  assert.equal(out.mock, undefined);
+});
+
+test("swapQuote calls the real TradingApiClient (stubbed fetch, no network)", async () => {
+  // Stub the global-fetch dependency at the client boundary: inject a fetchImpl
+  // that returns a canned Trading API /quote response. This exercises the real
+  // client request-shaping (x-api-key header, /quote path, EXACT_INPUT body)
+  // with zero network access.
+  const calls: { url: string; body: unknown; headers: unknown }[] = [];
+  const fakeFetch = (async (url: string, init: RequestInit) => {
+    calls.push({
+      url,
+      body: JSON.parse(String(init.body)),
+      headers: init.headers,
+    });
+    return new Response(
+      JSON.stringify({
+        requestId: "req-123",
+        routing: "CLASSIC",
+        quote: {
+          chainId: 1,
+          quoteId: "quote-abc",
+          output: { amount: "4200000000000000", token: "0xWETH" },
+        },
+      }),
+      { status: 200, headers: { "content-type": "application/json" } },
+    );
+  }) as unknown as typeof fetch;
+
+  const config = loadUniswapConfig({
+    UNISWAP_API_KEY: "test-key",
+    UNISWAP_SWAP_CHAIN_ID: "1",
+  });
+  const client = new TradingApiClient({ config, fetchImpl: fakeFetch });
+  const { swapQuote: liveQuote } = createSwapTools({ config, client });
+
+  const out = await exec(liveQuote, {
+    tokenIn: "USDC",
+    tokenOut: "WETH",
+    amountIn: "10",
     chainId: 1,
   });
-  assert.equal(quote.mock, true);
-  assert.equal(quote.amountOut, "100");
 
-  const result = await exec(swapExecute, {
-    quoteId: quote.quoteId,
+  assert.equal(out.available, true);
+  assert.equal(out.requestId, "req-123");
+  assert.equal(out.routing, "CLASSIC");
+  assert.equal(out.amountOut, "4200000000000000");
+  // 10 USDC -> 6 decimals base units.
+  assert.equal(out.amountIn, "10000000");
+
+  assert.equal(calls.length, 1);
+  assert.ok(calls[0].url.endsWith("/quote"));
+  const sentBody = calls[0].body as Record<string, unknown>;
+  assert.equal(sentBody.type, "EXACT_INPUT");
+  assert.equal(sentBody.amount, "10000000");
+  assert.equal(sentBody.tokenInChainId, 1);
+  assert.equal(sentBody.tokenOutChainId, 1);
+  // x-api-key header is set from config (never hard-coded).
+  assert.equal(
+    (calls[0].headers as Record<string, string>)["x-api-key"],
+    "test-key",
+  );
+});
+
+test("swapExecute returns { executed:false, reason:'no funded wallet configured' } with no wallet", async () => {
+  // With an api key but NO wallet provider, swapExecute must NOT broadcast and
+  // must NOT invent a tx hash — it reports the missing wallet (no network).
+  const config = loadUniswapConfig({
+    UNISWAP_API_KEY: "test-key",
+    UNISWAP_SWAP_CHAIN_ID: "1",
+  });
+  // A client whose fetch would throw if ever called — proves no network occurs.
+  const explodeFetch = (async () => {
+    throw new Error("network must not be called");
+  }) as unknown as typeof fetch;
+  const client = new TradingApiClient({ config, fetchImpl: explodeFetch });
+  const { swapExecute: gatedExecute } = createSwapTools({ config, client });
+
+  const out = await exec(gatedExecute, {
+    tokenIn: "USDC",
+    tokenOut: "WETH",
+    amountIn: "10",
+    chainId: 1,
     slippageBps: 50,
   });
-  assert.equal(result.mock, true);
-  assert.equal(result.status, "mocked");
+  assert.equal(out.executed, false);
+  assert.equal(out.reason, "no funded wallet configured");
+  assert.equal(out.txHash, undefined);
+});
+
+test("swapExecute prepares an unsigned tx (wallet provider, stubbed fetch) without broadcasting", async () => {
+  // With a wallet provider configured, swapExecute quotes + builds the swap tx
+  // via the real client (stubbed fetch) and surfaces the UNSIGNED tx — it still
+  // never invents a tx hash (broadcasting needs the viem WalletClient path).
+  const fakeFetch = (async (url: string, init: RequestInit) => {
+    const path = String(url);
+    if (path.endsWith("/quote")) {
+      return new Response(
+        JSON.stringify({
+          requestId: "q-1",
+          routing: "CLASSIC",
+          quote: { chainId: 1, quoteId: "quote-1" },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }
+    // /swap
+    void init;
+    return new Response(
+      JSON.stringify({
+        requestId: "s-1",
+        swap: {
+          to: "0x1111111111111111111111111111111111111111",
+          data: "0xdeadbeef",
+          value: "0",
+          chainId: 1,
+        },
+      }),
+      { status: 200, headers: { "content-type": "application/json" } },
+    );
+  }) as unknown as typeof fetch;
+
+  const config = loadUniswapConfig({
+    UNISWAP_API_KEY: "test-key",
+    UNISWAP_SWAP_CHAIN_ID: "1",
+  });
+  const client = new TradingApiClient({ config, fetchImpl: fakeFetch });
+  const walletProvider: IWalletProvider = {
+    async getAddress() {
+      return "0x2222222222222222222222222222222222222222";
+    },
+    async getBalance() {
+      return { symbol: "USDC", amount: "0.00" };
+    },
+    async pay() {
+      return { txHash: "0xunused" };
+    },
+  };
+  const { swapExecute: liveExecute } = createSwapTools({
+    config,
+    client,
+    walletProvider,
+  });
+
+  const out = await exec(liveExecute, {
+    tokenIn: "USDC",
+    tokenOut: "WETH",
+    amountIn: "10",
+    chainId: 1,
+    slippageBps: 50,
+  });
+
+  assert.equal(out.executed, false);
+  assert.equal(out.txHash, undefined, "must never invent a tx hash");
+  assert.equal(out.requestId, "s-1");
+  assert.equal(out.unsignedTx?.to, "0x1111111111111111111111111111111111111111");
+  assert.equal(out.unsignedTx?.data, "0xdeadbeef");
 });
 
 test("swapExecute rejects out-of-range slippage", async () => {
+  const base = { tokenIn: "USDC", tokenOut: "WETH", amountIn: "1" };
   assert.equal(
-    (await safeParse(swapExecute.inputSchema, { quoteId: "q", slippageBps: 0 }))
+    (await safeParse(swapExecute.inputSchema, { ...base, slippageBps: 0 }))
       .success,
     false,
   );
   assert.equal(
     (
       await safeParse(swapExecute.inputSchema, {
-        quoteId: "q",
+        ...base,
         slippageBps: 9999,
       })
     ).success,

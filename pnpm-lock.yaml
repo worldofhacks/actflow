@@ -292,6 +292,9 @@ importers:
       '@actflow/integrations-ens':
         specifier: workspace:*
         version: link:../integrations/ens
+      '@actflow/integrations-uniswap':
+        specifier: workspace:*
+        version: link:../integrations/uniswap
       '@actflow/mcp':
         specifier: workspace:*
         version: link:../mcp
@@ -347,6 +350,19 @@ importers:
         version: 2.28.6(bufferutil@4.1.0)(ts-node@10.9.2(@types/node@22.19.21)(typescript@5.9.3))(typescript@5.9.3)(utf-8-validate@5.0.10)
 
   packages/integrations/ens:
+    dependencies:
+      viem:
+        specifier: ^2.52.2
+        version: 2.52.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.15.0
+        version: 22.19.21
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
+
+  packages/integrations/uniswap:
     dependencies:
       viem:
         specifier: ^2.52.2

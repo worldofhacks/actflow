@@ -1,8 +1,8 @@
 {
-  "name": "@actflow/agents",
+  "name": "@actflow/integrations-uniswap",
   "version": "0.1.0",
   "private": true,
-  "description": "ActFlow agent runtime on Mastra — defineActflowAgent() factory, first-party agents, marketplace/wallet tool interfaces and the task-lifecycle workflow",
+  "description": "Uniswap Developer Platform Trading API for ActFlow agents — typed quote/check_approval/swap wrappers + viem execution. No hard-coded API keys, token addresses, or chain IDs.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,12 +22,7 @@
     "lint": "echo \"no lint configured\""
   },
   "dependencies": {
-    "@actflow/integrations-ens": "workspace:*",
-    "@actflow/integrations-uniswap": "workspace:*",
-    "@actflow/mcp": "workspace:*",
-    "@mastra/core": "^1.42.0",
-    "@mastra/mcp": "^1.10.0",
-    "zod": "^4.0.0"
+    "viem": "^2.52.2"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
