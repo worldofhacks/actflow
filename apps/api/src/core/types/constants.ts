@@ -1,0 +1,3 @@
+export const DEFAULT_BLOCK_NUMBER = 99999;
+export const DEFAULT_RATING = 100;
+export const DEFAULT_FEEDBACK = 'NOT AVAILABLE';

@@ -1,0 +1,18 @@
+# Local dev dependencies for apps/api.
+# Usage: docker compose -f docker-compose.dev.yml up -d
+# Matches the source backend's compose: mongo:5.0 exposed on host port 27018.
+services:
+  mongo:
+    image: mongo:5.0
+    container_name: actflow-api-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: test
+    ports:
+      - '27018:27017'
+    volumes:
+      - actflow_api_mongo_data:/data/db
+    restart: unless-stopped
+
+volumes:
+  actflow_api_mongo_data:
