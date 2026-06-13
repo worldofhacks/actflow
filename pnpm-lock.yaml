@@ -397,6 +397,22 @@ importers:
         specifier: ^5.8.0
         version: 5.9.3
 
+  packages/integrations/x402:
+    dependencies:
+      '@actflow/agents':
+        specifier: workspace:*
+        version: link:../../agents
+      viem:
+        specifier: ^2.52.2
+        version: 2.52.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.15.0
+        version: 22.19.21
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
+
   packages/mcp:
     dependencies:
       '@actflow/integrations-ens':
