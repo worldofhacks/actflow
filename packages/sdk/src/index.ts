@@ -37,3 +37,7 @@ export type {
   ActFlowChainConfigMap,
   ActFlowContractRef,
 } from "./constants";
+
+// Export viem chain configs (Arc testnet etc.). Config-driven: only well-known
+// public network constants + the cited Arc USDC address are inlined.
+export * from "./chains";

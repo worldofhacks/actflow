@@ -1,5 +1,5 @@
 {
-    "_readme": "Per-chain deployment config, keyed by chainId. Copy to bcConfig.json and fill in. rvToken.address: existing wrapped-native/revenue token (WETH9-style deposit()); leave empty to have scripts/deploy.js deploy the bundled RevenueToken mock (local/test chains only). params: ACTMarketplaceEVM initializer values. scripts/deploy.js writes the deployed marketplace address + ABI back into this file.",
+    "_readme": "Per-chain deployment config, keyed by chainId. Copy to bcConfig.json and fill in. rvToken.address: existing revenue/escrow token (for Arc testnet this is native USDC ERC-20 @ 0x3600..0000, 6 decimals); leave empty to use the per-chain default (arcTestnet -> Arc USDC) or, on chains without a default, have scripts/deploy.js deploy the bundled RevenueToken mock (local/test chains only). REVENUE_TOKEN_ADDRESS env overrides this on any chain. params: ACTMarketplaceEVM initializer values. scripts/deploy.js writes the deployed marketplace address + ABI back into this file.",
     "31337": {
         "chain": {
             "rpcUrl": "http://127.0.0.1:8545"
@@ -18,6 +18,22 @@
     "11155111": {
         "chain": {
             "rpcUrl": "https://YOUR-SEPOLIA-RPC-ENDPOINT"
+        },
+        "rvToken": {
+            "address": ""
+        },
+        "params": {
+            "serviceFee": 100,
+            "serviceDelay": 100,
+            "validationDelay": 50,
+            "validatorStakeDuration": 10000,
+            "validatorStakeAmount": "10000"
+        }
+    },
+    "5042002": {
+        "_note": "Arc (Circle) testnet. Native gas token is USDC. RPC comes from the ARC_TESTNET_RPC_URL env var (default https://rpc.testnet.arc.network). rvToken.address left empty -> scripts/deploy.js uses the cited Arc native USDC ERC-20 (0x3600..0000, 6 decimals) from docs.arc.io/arc/references/contract-addresses; set REVENUE_TOKEN_ADDRESS to override. Explorer: https://testnet.arcscan.app. Faucet: https://faucet.circle.com (select Arc Testnet).",
+        "chain": {
+            "rpcUrl": "https://rpc.testnet.arc.network"
         },
         "rvToken": {
             "address": ""

@@ -34,8 +34,12 @@ module.exports = {
       chainId: 11155111,
       accounts,
     },
+    // Arc (Circle) testnet — USDC is the native gas token. chainId verified live.
+    // url from ARC_TESTNET_RPC_URL (no secrets committed); accounts from
+    // DEPLOYER_PRIVATE_KEY. Source: https://docs.arc.io/arc/references/connect-to-arc.md
     arcTestnet: {
       url: process.env.ARC_TESTNET_RPC_URL || "",
+      chainId: 5042002,
       accounts,
     },
   },

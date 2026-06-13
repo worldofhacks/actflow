@@ -19,6 +19,9 @@
     "test": "echo \"no tests yet\"",
     "lint": "echo \"no lint configured\""
   },
+  "dependencies": {
+    "viem": "^2.23.2"
+  },
   "devDependencies": {
     "typescript": "^5.8.0"
   }
