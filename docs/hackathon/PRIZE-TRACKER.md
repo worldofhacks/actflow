@@ -7,7 +7,7 @@ Status legend: 🔲 not started · 🟡 in progress · ✅ demo-ready · ⛔ blo
 | ENS Continuity | $4K | 🔲 | ENS code written this weekend; functional demo; NO hard-coded values; clearly improves agent identity/discoverability; video or live demo; in-person booth Sun AM | |
 | ENS AI Agents | $5K | 🔲 | (same as above — agent-identity focus) | |
 | ENS pool | $6K split | 🔲 | (same) | |
-| Google Cloud ERC-8004 | $5K | 🔲 | BigQuery as core query layer over Ethereum mainnet ERC-8004 data; official EF registry addresses; lightweight frontend on top | |
+| Google Cloud ERC-8004 | $5K | 🟡 | BigQuery as core query layer over Ethereum mainnet ERC-8004 data; official EF registry addresses; lightweight frontend on top | |
 | Uniswap API | $7K | 🟡 | Valid API key from Uniswap Developer Platform; API used for core functionality; submit developer feedback form | |
 | Arc Agentic Nanopayments | $3.25K | 🔲 | Agent-to-agent gas-free USDC micropayments on Arc; working frontend + backend; architecture diagram; video; repo link | |
 | Privy Agent Wallet | $1.7K | 🔲 | Privy Agent Wallet CLI; agent performs ≥1 onchain action; demo shows agent using wallet/moving assets; written Privy-usage explanation | |
@@ -34,6 +34,8 @@ Status legend: 🔲 not started · 🟡 in progress · ✅ demo-ready · ⛔ blo
 | 2026-06-13 | ENS live resolution working | @actflow/integrations-ens tests: forward-resolve vitalik.eth + reverse-resolve pass against mainnet RPC |
 
 | 2026-06-13 | Uniswap swap-agent tool live | wired swapQuote returned real CLASSIC quote, requestId e4Hx-hbCCYcEPzQ=, amountOut 5975340123615612 (10 USDC->WETH mainnet) |
+
+| 2026-06-13 | ERC-8004 reputation service live (fixture) | services/reputation 35/35 tests; SQL pinned to verified registry addrs/topic0; /leaderboard ranks agents w/ scores+x402+validations; flips to live BigQuery on GCP creds |
 
 ## Tx-hash log
 
