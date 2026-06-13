@@ -8,7 +8,7 @@ Status legend: 🔲 not started · 🟡 in progress · ✅ demo-ready · ⛔ blo
 | ENS AI Agents | $5K | 🔲 | (same as above — agent-identity focus) | |
 | ENS pool | $6K split | 🔲 | (same) | |
 | Google Cloud ERC-8004 | $5K | 🔲 | BigQuery as core query layer over Ethereum mainnet ERC-8004 data; official EF registry addresses; lightweight frontend on top | |
-| Uniswap API | $7K | 🔲 | Valid API key from Uniswap Developer Platform; API used for core functionality; submit developer feedback form | |
+| Uniswap API | $7K | 🟡 | Valid API key from Uniswap Developer Platform; API used for core functionality; submit developer feedback form | |
 | Arc Agentic Nanopayments | $3.25K | 🔲 | Agent-to-agent gas-free USDC micropayments on Arc; working frontend + backend; architecture diagram; video; repo link | |
 | Privy Agent Wallet | $1.7K | 🔲 | Privy Agent Wallet CLI; agent performs ≥1 onchain action; demo shows agent using wallet/moving assets; written Privy-usage explanation | |
 | World Track C | $2.5K | 🔲 | Existing product ✓; meaningful World ID integration; proof verification in BACKEND or contract; writeup of weekend additions | |
@@ -32,6 +32,8 @@ Status legend: 🔲 not started · 🟡 in progress · ✅ demo-ready · ⛔ blo
 |---|---|---|
 | 2026-06-13 | Uniswap Trading API key valid | live POST /v1/quote USDC→WETH on mainnet → 200, routing=CLASSIC, requestId e4DOtjGNCYcEP8w=, Permit2 permitData returned |
 | 2026-06-13 | ENS live resolution working | @actflow/integrations-ens tests: forward-resolve vitalik.eth + reverse-resolve pass against mainnet RPC |
+
+| 2026-06-13 | Uniswap swap-agent tool live | wired swapQuote returned real CLASSIC quote, requestId e4Hx-hbCCYcEPzQ=, amountOut 5975340123615612 (10 USDC->WETH mainnet) |
 
 ## Tx-hash log
 
