@@ -1,0 +1,31 @@
+{
+  "name": "@actflow/integrations-ens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ENS identity for ActFlow agents — viem-based subname minting (Name Wrapper), ENSIP-25 registry attestation + ENSIP-26 agent text records, forward/reverse resolution. No hard-coded names, addresses, or chain IDs.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "tsc && node --test \"dist/tests/*.test.js\"",
+    "lint": "echo \"no lint configured\""
+  },
+  "dependencies": {
+    "viem": "^2.52.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.0"
+  }
+}
