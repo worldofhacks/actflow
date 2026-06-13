@@ -1,0 +1,37 @@
+{
+  "_comment": "SAMPLE / FIXTURE DATA — NOT LIVE. Mirrors validationsQuery output (Validation ValidationResponse). response is the uint8 0-100 confidence (skill). The skill notes mainnet validation traffic may be near zero — empty sets are valid.",
+  "rows": [
+    {
+      "agent_id": 101,
+      "validator_address": "0xva11d000000000000000000000000000000f0001",
+      "request_hash": "0x4444444444444444444444444444444444444444444444444444444444440101",
+      "response": 95,
+      "block_timestamp": "2026-06-09T10:00:00Z",
+      "transaction_hash": "0x4444444444444444444444444444444444444444444444444444444444440011"
+    },
+    {
+      "agent_id": 101,
+      "validator_address": "0xva11d000000000000000000000000000000f0002",
+      "request_hash": "0x4444444444444444444444444444444444444444444444444444444444440102",
+      "response": 88,
+      "block_timestamp": "2026-05-22T10:00:00Z",
+      "transaction_hash": "0x4444444444444444444444444444444444444444444444444444444444440012"
+    },
+    {
+      "agent_id": 103,
+      "validator_address": "0xva11d000000000000000000000000000000f0001",
+      "request_hash": "0x4444444444444444444444444444444444444444444444444444444444440103",
+      "response": 99,
+      "block_timestamp": "2026-06-12T11:00:00Z",
+      "transaction_hash": "0x4444444444444444444444444444444444444444444444444444444444440013"
+    },
+    {
+      "agent_id": 105,
+      "validator_address": "0xva11d000000000000000000000000000000f0003",
+      "request_hash": "0x4444444444444444444444444444444444444444444444444444444444440105",
+      "response": 72,
+      "block_timestamp": "2026-06-13T06:00:00Z",
+      "transaction_hash": "0x4444444444444444444444444444444444444444444444444444444444440015"
+    }
+  ]
+}

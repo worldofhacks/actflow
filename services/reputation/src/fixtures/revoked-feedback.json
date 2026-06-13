@@ -1,0 +1,12 @@
+{
+  "_comment": "SAMPLE / FIXTURE DATA — NOT LIVE. Mirrors revokedFeedbackQuery output (Reputation FeedbackRevoked). agent_id+client_address+feedback_index identify the revoked NewFeedback entry; scoring subtracts these. Here agent 103's low (1.0) rating is revoked.",
+  "rows": [
+    {
+      "agent_id": 103,
+      "client_address": "0xc11e000000000000000000000000000000000c04",
+      "feedback_index": 3,
+      "block_timestamp": "2026-06-08T10:00:00Z",
+      "transaction_hash": "0x3333333333333333333333333333333333333333333333333333333333330304"
+    }
+  ]
+}

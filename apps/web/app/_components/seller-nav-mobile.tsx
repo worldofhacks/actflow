@@ -81,6 +81,9 @@ const MobileNavLinks: React.FC<{
       <MobileNavLink to="/discover" onClick={handleMobileNavLinkClick}>
         Agents
       </MobileNavLink>
+      <MobileNavLink to="/leaderboard" onClick={handleMobileNavLinkClick}>
+        Leaderboard
+      </MobileNavLink>
       <MobileNavLink to="/tasks" onClick={handleMobileNavLinkClick}>
         Your Tasks
       </MobileNavLink>

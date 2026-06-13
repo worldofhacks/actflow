@@ -1,0 +1,125 @@
+{
+  "_comment": "SAMPLE / FIXTURE DATA — NOT LIVE. Mirrors feedbackQuery output (Reputation NewFeedback). Decoded score = value_raw / 10**value_decimals. value_hex is the raw int128 data word (skill data layout). value_decimals=1 here, so value_raw 50 => 5.0 stars.",
+  "rows": [
+    {
+      "agent_id": 101,
+      "client_address": "0xc11e000000000000000000000000000000000a01",
+      "feedback_index": 0,
+      "value_hex": "0x0000000000000000000000000000000000000000000000000000000000000032",
+      "value_raw": 50,
+      "value_decimals": 1,
+      "block_timestamp": "2026-06-10T12:00:00Z",
+      "transaction_hash": "0x2222222222222222222222222222222222222222222222222222222222220101"
+    },
+    {
+      "agent_id": 101,
+      "client_address": "0xc11e000000000000000000000000000000000a02",
+      "feedback_index": 1,
+      "value_hex": "0x000000000000000000000000000000000000000000000000000000000000002d",
+      "value_raw": 45,
+      "value_decimals": 1,
+      "block_timestamp": "2026-06-05T09:30:00Z",
+      "transaction_hash": "0x2222222222222222222222222222222222222222222222222222222222220102"
+    },
+    {
+      "agent_id": 101,
+      "client_address": "0xc11e000000000000000000000000000000000a03",
+      "feedback_index": 2,
+      "value_hex": "0x0000000000000000000000000000000000000000000000000000000000000032",
+      "value_raw": 50,
+      "value_decimals": 1,
+      "block_timestamp": "2026-05-20T14:00:00Z",
+      "transaction_hash": "0x2222222222222222222222222222222222222222222222222222222222220103"
+    },
+    {
+      "agent_id": 102,
+      "client_address": "0xc11e000000000000000000000000000000000b01",
+      "feedback_index": 0,
+      "value_hex": "0x0000000000000000000000000000000000000000000000000000000000000028",
+      "value_raw": 40,
+      "value_decimals": 1,
+      "block_timestamp": "2026-06-08T11:00:00Z",
+      "transaction_hash": "0x2222222222222222222222222222222222222222222222222222222222220201"
+    },
+    {
+      "agent_id": 102,
+      "client_address": "0xc11e000000000000000000000000000000000b02",
+      "feedback_index": 1,
+      "value_hex": "0x0000000000000000000000000000000000000000000000000000000000000023",
+      "value_raw": 35,
+      "value_decimals": 1,
+      "block_timestamp": "2026-04-15T10:00:00Z",
+      "transaction_hash": "0x2222222222222222222222222222222222222222222222222222222222220202"
+    },
+    {
+      "agent_id": 103,
+      "client_address": "0xc11e000000000000000000000000000000000c01",
+      "feedback_index": 0,
+      "value_hex": "0x0000000000000000000000000000000000000000000000000000000000000032",
+      "value_raw": 50,
+      "value_decimals": 1,
+      "block_timestamp": "2026-06-12T16:45:00Z",
+      "transaction_hash": "0x2222222222222222222222222222222222222222222222222222222222220301"
+    },
+    {
+      "agent_id": 103,
+      "client_address": "0xc11e000000000000000000000000000000000c02",
+      "feedback_index": 1,
+      "value_hex": "0x0000000000000000000000000000000000000000000000000000000000000032",
+      "value_raw": 50,
+      "value_decimals": 1,
+      "block_timestamp": "2026-06-11T13:20:00Z",
+      "transaction_hash": "0x2222222222222222222222222222222222222222222222222222222222220302"
+    },
+    {
+      "agent_id": 103,
+      "client_address": "0xc11e000000000000000000000000000000000c03",
+      "feedback_index": 2,
+      "value_hex": "0x000000000000000000000000000000000000000000000000000000000000002d",
+      "value_raw": 45,
+      "value_decimals": 1,
+      "block_timestamp": "2026-06-09T08:10:00Z",
+      "transaction_hash": "0x2222222222222222222222222222222222222222222222222222222222220303"
+    },
+    {
+      "agent_id": 103,
+      "client_address": "0xc11e000000000000000000000000000000000c04",
+      "feedback_index": 3,
+      "value_hex": "0x000000000000000000000000000000000000000000000000000000000000000a",
+      "value_raw": 10,
+      "value_decimals": 1,
+      "block_timestamp": "2026-06-07T19:00:00Z",
+      "transaction_hash": "0x2222222222222222222222222222222222222222222222222222222222220304"
+    },
+    {
+      "agent_id": 104,
+      "client_address": "0xc11e000000000000000000000000000000000d01",
+      "feedback_index": 0,
+      "value_hex": "0x000000000000000000000000000000000000000000000000000000000000001e",
+      "value_raw": 30,
+      "value_decimals": 1,
+      "block_timestamp": "2026-03-10T12:00:00Z",
+      "transaction_hash": "0x2222222222222222222222222222222222222222222222222222222222220401"
+    },
+    {
+      "agent_id": 105,
+      "client_address": "0xc11e000000000000000000000000000000000e01",
+      "feedback_index": 0,
+      "value_hex": "0x000000000000000000000000000000000000000000000000000000000000002d",
+      "value_raw": 45,
+      "value_decimals": 1,
+      "block_timestamp": "2026-06-13T07:00:00Z",
+      "transaction_hash": "0x2222222222222222222222222222222222222222222222222222222222220501"
+    },
+    {
+      "agent_id": 105,
+      "client_address": "0xc11e000000000000000000000000000000000e02",
+      "feedback_index": 1,
+      "value_hex": "0x0000000000000000000000000000000000000000000000000000000000000032",
+      "value_raw": 50,
+      "value_decimals": 1,
+      "block_timestamp": "2026-06-12T22:30:00Z",
+      "transaction_hash": "0x2222222222222222222222222222222222222222222222222222222222220502"
+    }
+  ]
+}

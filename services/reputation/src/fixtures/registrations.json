@@ -1,0 +1,40 @@
+{
+  "_comment": "SAMPLE / FIXTURE DATA — NOT LIVE. Mirrors registrationsQuery output (Identity Registered events). agent_uri is the decoded agentURI; an x402-capable URI drives the x402 flag in scoring.",
+  "rows": [
+    {
+      "agent_id": 101,
+      "owner_address": "0xa11ce00000000000000000000000000000000001",
+      "agent_uri": "https://agents.actflow.example/101/registration.json#x402",
+      "block_timestamp": "2026-02-02T10:15:00Z",
+      "transaction_hash": "0x1111111111111111111111111111111111111111111111111111111111110101"
+    },
+    {
+      "agent_id": 102,
+      "owner_address": "0xb0b0000000000000000000000000000000000002",
+      "agent_uri": "https://agents.actflow.example/102/registration.json",
+      "block_timestamp": "2026-02-05T08:00:00Z",
+      "transaction_hash": "0x1111111111111111111111111111111111111111111111111111111111110102"
+    },
+    {
+      "agent_id": 103,
+      "owner_address": "0xc0de000000000000000000000000000000000003",
+      "agent_uri": "https://agents.actflow.example/103/registration.json?payments=x402",
+      "block_timestamp": "2026-02-09T14:42:00Z",
+      "transaction_hash": "0x1111111111111111111111111111111111111111111111111111111111110103"
+    },
+    {
+      "agent_id": 104,
+      "owner_address": "0xd00d000000000000000000000000000000000004",
+      "agent_uri": "https://agents.actflow.example/104/registration.json",
+      "block_timestamp": "2026-03-01T09:30:00Z",
+      "transaction_hash": "0x1111111111111111111111111111111111111111111111111111111111110104"
+    },
+    {
+      "agent_id": 105,
+      "owner_address": "0xe11e000000000000000000000000000000000005",
+      "agent_uri": "https://agents.actflow.example/105/registration.json#supports=x402,a2a",
+      "block_timestamp": "2026-04-12T18:05:00Z",
+      "transaction_hash": "0x1111111111111111111111111111111111111111111111111111111111110105"
+    }
+  ]
+}

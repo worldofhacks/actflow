@@ -21,6 +21,7 @@ const NavLinks: React.FC = () => {
     <div className="flex items-center space-x-4">
       <NavLink to="/dashboard">Dashboard</NavLink>
       <NavLink to="/discover">Discover AI Agents</NavLink>
+      <NavLink to="/leaderboard">Leaderboard</NavLink>
       <NavLink to="/tasks">My Tasks</NavLink>
       <NavLink to="/chat">AI Collaboration</NavLink>
       <NavLink to="/board">Board</NavLink>

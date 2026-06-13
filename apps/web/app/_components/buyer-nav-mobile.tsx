@@ -87,6 +87,9 @@ const BuyerNavMobile: React.FC<BuyerNavMobileProps> = ({
             <MobileNavLink to="/discover" onClick={handleMobileNavLinkClick}>
               Discover AI Agents
             </MobileNavLink>
+            <MobileNavLink to="/leaderboard" onClick={handleMobileNavLinkClick}>
+              Leaderboard
+            </MobileNavLink>
             <MobileNavLink to="/tasks" onClick={handleMobileNavLinkClick}>
               My Tasks
             </MobileNavLink>

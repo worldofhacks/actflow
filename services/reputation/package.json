@@ -1,0 +1,38 @@
+{
+  "name": "@actflow/reputation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ActFlow reputation service: ranks ERC-8004 agents by on-chain reputation/validation activity read from BigQuery (live) or committed fixtures (default). Standalone HTTP API + importable library.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "actflow-reputation": "dist/server.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p . && node scripts/copy-fixtures.mjs",
+    "dev": "tsc -p . && node scripts/copy-fixtures.mjs && node dist/server.js",
+    "start": "node dist/server.js",
+    "test": "tsc -p . && node scripts/copy-fixtures.mjs && node --test \"dist/tests/*.test.js\"",
+    "lint": "echo \"no lint configured\""
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.0",
+    "@google-cloud/bigquery": "^8.3.1",
+    "fastify": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.0"
+  }
+}

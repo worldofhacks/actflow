@@ -1,0 +1,17 @@
+{
+  "_comment": "SAMPLE / FIXTURE DATA — NOT LIVE. Mirrors activityOverTimeQuery output (daily NewFeedback counts per agent). Day buckets are UTC. Consistent with feedback.json (one row per (agent_id, day)).",
+  "rows": [
+    { "agent_id": 101, "day": "2026-06-10", "feedback_count": 1 },
+    { "agent_id": 101, "day": "2026-06-05", "feedback_count": 1 },
+    { "agent_id": 101, "day": "2026-05-20", "feedback_count": 1 },
+    { "agent_id": 102, "day": "2026-06-08", "feedback_count": 1 },
+    { "agent_id": 102, "day": "2026-04-15", "feedback_count": 1 },
+    { "agent_id": 103, "day": "2026-06-12", "feedback_count": 1 },
+    { "agent_id": 103, "day": "2026-06-11", "feedback_count": 1 },
+    { "agent_id": 103, "day": "2026-06-09", "feedback_count": 1 },
+    { "agent_id": 103, "day": "2026-06-07", "feedback_count": 1 },
+    { "agent_id": 104, "day": "2026-03-10", "feedback_count": 1 },
+    { "agent_id": 105, "day": "2026-06-13", "feedback_count": 1 },
+    { "agent_id": 105, "day": "2026-06-12", "feedback_count": 1 }
+  ]
+}
