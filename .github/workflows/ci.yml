@@ -8,11 +8,18 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    env:
+      # NEXT_PUBLIC_* are inlined at `next build`; CI has no secrets, so use
+      # demo placeholders (a non-empty WalletConnect id is required or the web
+      # build throws "No projectId found"). Real values come from .env locally.
+      NEXT_PUBLIC_RAINBOW_KIT_PROJECT_ID: "00000000000000000000000000000000"
+      NEXT_PUBLIC_WORLD_APP_ID: "app_ci_placeholder"
+      NEXT_PUBLIC_WORLD_ACTION_ID: "free-trial"
     steps:
       - uses: actions/checkout@v4
+      # No `version:` here — pnpm/action-setup reads it from package.json's
+      # "packageManager" field; specifying both errors ERR_PNPM_BAD_PM_VERSION.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: 22
