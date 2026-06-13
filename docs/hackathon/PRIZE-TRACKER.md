@@ -18,11 +18,20 @@ Status legend: 🔲 not started · 🟡 in progress · ✅ demo-ready · ⛔ blo
 
 | Date | Blocker | Owner | Status |
 |---|---|---|---|
-| 2026-06-12 | Uniswap API key — needs human signup at developers.uniswap.org | user | ⛔ open |
+| 2026-06-13 | Uniswap API key | user | ✅ provided + validated (live USDC→WETH quote returned) |
+| 2026-06-13 | World ID app + keys (app_id, rp_id, signer_key, api_key, action) | user | ✅ provided (validate during Phase 5 build) |
 | 2026-06-12 | Privy app (ID + secret) — needs dashboard.privy.io signup | user | ⛔ open |
-| 2026-06-12 | World ID app + action — needs developer.worldcoin.org signup | user | ⛔ open |
-| 2026-06-12 | GCP project + service account for BigQuery — needs console.cloud.google.com | user | ⛔ open |
+| 2026-06-12 | GCP project + service-account JSON for BigQuery — needs console.cloud.google.com | user | ⛔ open (blocks Phase 3 live queries; code builds against fixtures) |
+| 2026-06-13 | ANTHROPIC_API_KEY — for live agent LLM turns | user | ⛔ open (runtime builds/tests without it) |
+| 2026-06-13 | Sepolia funds + DEPLOYER_PRIVATE_KEY — for live ENS subname mint | user | ⛔ open (mint gated; resolution + all else works) |
 | 2026-06-12 | Circle x402 docs page 404s (developers.circle.com/x402) — facilitator details unverified; building x402-style with EIP-3009 direct | claude | 🟡 workaround |
+
+## Evidence log
+
+| Date | Item | Evidence |
+|---|---|---|
+| 2026-06-13 | Uniswap Trading API key valid | live POST /v1/quote USDC→WETH on mainnet → 200, routing=CLASSIC, requestId e4DOtjGNCYcEP8w=, Permit2 permitData returned |
+| 2026-06-13 | ENS live resolution working | @actflow/integrations-ens tests: forward-resolve vitalik.eth + reverse-resolve pass against mainnet RPC |
 
 ## Tx-hash log
 
