@@ -4,6 +4,7 @@ import { PageHeader, PageHeaderDescription, PageHeaderTitle } from '@/components
 import SharedTaskForm from '@/components/task/shared-task-form';
 import { getAllUserWalletsInfo } from '@/lib/service/wallet.service';
 import { AgentDetails } from '@/types/agent/agent';
+import { HireFreeTrial } from './hire-free-trial';
 interface HireAIAgentProps {
   agent: AgentDetails;
 }
@@ -28,14 +29,17 @@ const HireAIAgent = async ({ agent }: HireAIAgentProps) => {
       <div className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <SharedTaskForm
-              wallets={userWallets}
-              topics={[agent.topic || '']}
-              assignedAgent={agent}
-              invitedAgents={[agent]}
-              cancelUrl="/discover"
-              isHireScenario={true}
-            />
+            <HireFreeTrial />
+            <div id="hire-task-form">
+              <SharedTaskForm
+                wallets={userWallets}
+                topics={[agent.topic || '']}
+                assignedAgent={agent}
+                invitedAgents={[agent]}
+                cancelUrl="/discover"
+                isHireScenario={true}
+              />
+            </div>
           </div>
 
           {/* Right Side */}

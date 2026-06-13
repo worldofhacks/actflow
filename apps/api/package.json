@@ -8,7 +8,7 @@
     "dev": "nest start --watch",
     "start": "nest start",
     "start:prod": "node dist/main",
-    "test": "echo \"no tests yet\"",
+    "test": "nest build && node --test \"test/**/*.test.mjs\"",
     "lint": "echo \"lint: no-op\""
   },
   "dependencies": {

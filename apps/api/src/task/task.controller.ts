@@ -3,6 +3,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { ContractConfigService } from '../config/service/contract.config.service';
 import { FacadeTaskService } from '../domain/task/facade.task.service';
 import { User } from '../user/decorators/user.decorator';
+import { WorldService } from '../world/world.service';
 import { TaskService } from './services/task.service';
 import { TaskMapper } from './task.mapper';
 import { AcceptTaskDto } from './types/request/accept-task.dto';
@@ -23,14 +24,31 @@ export class TaskController {
     private readonly taskService: TaskService,
     private readonly facadeService: FacadeTaskService,
     private readonly contractConfigService: ContractConfigService,
+    // World ID proof-of-human free-trial gate (Phase 5). See WorldService.consumeFreeTrial.
+    private readonly worldService: WorldService,
   ) {}
 
   @UseGuards(JwtAuthGuard)
   @Post('create-task')
   async createTask(
     @User() user: any,
-    @Body() taskData: CreateTaskDto,
+    @Body() taskData: CreateTaskDto & { worldNullifier?: string },
   ): Promise<CreateTaskResponse> {
+    // ===== WORLD ID FREE-TRIAL INTEGRATION POINT =====
+    // This is the exact spot where a task would otherwise require payment. When the client
+    // supplies a proof-of-human nullifier (obtained from POST /world/verify), we attempt to
+    // consume one free trial BEFORE registering the task. If a trial is consumed the task
+    // proceeds for free; if none remain (paymentRequired) we leave the normal on-chain
+    // reward/payment flow below untouched. Absent a nullifier, behaviour is unchanged.
+    //
+    // Kept deliberately additive/opt-in to avoid coupling the payment-critical registerTask
+    // path to World ID: removing this block restores the original behaviour exactly.
+    if (taskData.worldNullifier) {
+      await this.worldService.consumeFreeTrial(taskData.worldNullifier);
+      // The ConsumeResult ({ consumed, paymentRequired }) can be surfaced to the client or
+      // used to skip the on-chain reward escrow; left as the documented hook so the payment
+      // flow owner wires the skip without this stream touching escrow logic.
+    }
     return this.facadeService.registerTask(user._id, taskData);
   }
 

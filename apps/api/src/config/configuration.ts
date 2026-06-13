@@ -20,6 +20,15 @@ export const configSchema = Joi.object({
   ACT_MARKET_ADDRESS: Joi.string().required(),
   REVENUE_TOKEN_ADDRESS: Joi.string().required(),
   WALLET_ENCRYPTION_KEY: Joi.string().required(),
+  // --- World ID (proof-of-human free-trial gating; all OPTIONAL so DB-only boot works) ---
+  // Verification is server-side: prefer v4 (WORLD_RP_ID), fall back to v2 (WORLD_APP_ID).
+  WORLD_RP_ID: Joi.string().optional().allow(''),
+  WORLD_APP_ID: Joi.string().optional().allow(''),
+  WORLD_ACTION_ID: Joi.string().optional().allow('').default('free-trial'),
+  WORLD_API_KEY: Joi.string().optional().allow(''),
+  WORLD_SIGNER_KEY: Joi.string().optional().allow(''),
+  WORLD_API_HOST: Joi.string().optional().allow(''),
+  WORLD_FREE_TRIALS: Joi.number().optional(),
 }).unknown(true);
 
 export default registerAs('app', () => {
@@ -39,6 +48,14 @@ export default registerAs('app', () => {
       contractOwnerKey: process.env.CONTRACT_OWNER_KEY,
       actMarketAddress: process.env.ACT_MARKET_ADDRESS,
       revenueTokenAddress: process.env.REVENUE_TOKEN_ADDRESS,
+    },
+    world: {
+      rpId: process.env.WORLD_RP_ID,
+      appId: process.env.WORLD_APP_ID,
+      actionId: process.env.WORLD_ACTION_ID || 'free-trial',
+      apiKey: process.env.WORLD_API_KEY,
+      signerKey: process.env.WORLD_SIGNER_KEY,
+      apiHost: process.env.WORLD_API_HOST,
     },
   };
 });

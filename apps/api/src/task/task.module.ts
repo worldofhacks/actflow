@@ -10,6 +10,7 @@ import { ContractClient } from '../marketplace/market.rpc.client';
 import { MarketplaceModule } from '../marketplace/marketplace.module';
 import { UserModule } from '../user/user.module';
 import { WalletModule } from '../wallet/wallet.module';
+import { WorldModule } from '../world/world.module';
 import { TaskMetadataRepository } from './repository/task-metadata.repository';
 import { TaskRepository } from './repository/task.repository';
 import { TaskMetadataDocument, TaskMetadataSchema } from './schemas/task-metadata.schema';
@@ -32,6 +33,9 @@ import { TaskMapper } from './task.mapper';
     forwardRef(() => BlockchainEventsModule), //we using this module here just for one method (repo)
     forwardRef(() => DomainModule),
     ContractConfigModule,
+    // World ID free-trial gate: makes WorldService available to the task flow so a free
+    // task can consume a proof-of-human trial instead of requiring payment.
+    WorldModule,
   ],
   controllers: [TaskController],
   providers: [

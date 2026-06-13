@@ -20,6 +20,7 @@ import { TaskModule } from './task/task.module';
 import { UserModule } from './user/user.module';
 import { ValidatorsModule } from './validators/validator.module';
 import { WalletModule } from './wallet/wallet.module';
+import { WorldModule } from './world/world.module';
 
 // Dropped on monorepo import (dead/pre-pivot infrastructure): MailerModule/EmailModule,
 // CookieFunModule, NativeAgentModule, PhylloModule, EnsambleModule, InvitationCodeModule,
@@ -47,6 +48,7 @@ import { WalletModule } from './wallet/wallet.module';
     ValidatorsModule,
     DomainModule,
     ContractConfigModule,
+    WorldModule,
   ],
   controllers: [AppController, DashboardController],
   providers: [AppService],

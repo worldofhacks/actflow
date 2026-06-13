@@ -6,7 +6,7 @@
     "dev": "next dev -p 3400",
     "build": "next build",
     "start": "next start -p 3400",
-    "test": "echo \"no tests yet\"",
+    "test": "node --experimental-strip-types --test \"test/**/*.test.mjs\"",
     "lint": "next lint"
   },
   "dependencies": {
@@ -35,6 +35,7 @@
     "@rainbow-me/rainbowkit": "^2.2.4",
     "@tanstack/react-query": "^5.66.9",
     "@tanstack/react-table": "^8.20.6",
+    "@worldcoin/idkit": "^4.1.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
