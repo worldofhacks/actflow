@@ -1,0 +1,51 @@
+import Image from 'next/image';
+import { redirect } from 'next/navigation';
+import { getCurrentUser } from '../../../../lib/service/userService';
+import { VerifyEmailForm } from './_components/verify-email-form';
+
+export default async function VerifyPage() {
+  const currentUser = await getCurrentUser();
+  if (currentUser?.data?.isEmailVerified) {
+    redirect('/discover');
+  }
+  if (!currentUser?.data?.email) {
+    redirect('/?login=true');
+  }
+  return (
+    <div className=" overflow-hidden my-auto mx-auto inset-0 px-4 py-8">
+      <div className="absolute inset-0 -z-10">
+        <Image
+          src="/images/ascii-stars.png"
+          alt="ASCII Stars"
+          fill
+          style={{ objectFit: 'cover' }}
+          quality={100}
+          priority
+        />
+      </div>
+
+      <div className="absolute mx-auto my-auto -z-20 lg:size-4/5 inset-0 ">
+        <Image
+          src="/images/ascii-planet.png"
+          alt="ASCII Planet"
+          fill
+          quality={100}
+          priority
+          className="flex w-full h-full object-cover overflow-visible opacity-40"
+        />
+      </div>
+
+      {/* <div className="absolute inset-0 -z-20">
+        <Image
+          src="/images/ascii-planet-glow.png"
+          alt="ASCII Planet"
+          fill
+          style={{ objectFit: 'cover', opacity: 0.15 }}
+          quality={100}
+          priority
+        />
+      </div> */}
+      <VerifyEmailForm email={currentUser?.data?.email} />
+    </div>
+  );
+}

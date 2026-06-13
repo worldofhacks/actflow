@@ -1,0 +1,173 @@
+import { NextAuthOptions } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { getCsrfToken } from 'next-auth/react';
+import { recoverMessageAddress } from 'viem';
+import { parseSiweMessage, validateSiweMessage } from 'viem/siwe';
+import { fetchWithOutAuth } from './lib/service';
+import { LoginResponse, ProviderType } from './types/auth';
+import { User } from './types/user';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
+/**
+ * Fetch the user profile from the backend with a freshly issued access token.
+ */
+async function fetchProfile(accessToken: string | undefined) {
+  return fetchWithOutAuth<User>(`${API_BASE}/users/profile`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+}
+
+function toSessionUser(user: User, tokens: LoginResponse | undefined) {
+  return {
+    id: user._id,
+    name: user.username,
+    email: user.email,
+    accessToken: tokens?.access_token,
+    refreshToken: tokens?.refresh_token,
+    twitterLinked: !!user.linkedAccounts?.twitter,
+    googleLinked: !!user.linkedAccounts?.google,
+    provider: user.provider?.type ?? ProviderType.CREDENTIALS,
+  };
+}
+
+export const authOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
+      id: 'credentials',
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'text' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        const login = await fetchWithOutAuth<LoginResponse>(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          body: JSON.stringify({
+            email: credentials?.email,
+            password: credentials?.password,
+          }),
+        });
+        if (!login.success || !login.data?.access_token) {
+          throw new Error(login.error ?? 'Authentication failed', {
+            cause: 'AuthenticationError',
+          });
+        }
+
+        const profile = await fetchProfile(login.data.access_token);
+        if (!profile.success || !profile.data) {
+          throw new Error(profile.error ?? 'Authentication failed', {
+            cause: 'AuthenticationError',
+          });
+        }
+        return toSessionUser(profile.data, login.data);
+      },
+    }),
+    /**
+     * Sign-In With Ethereum (EIP-4361).
+     *
+     * The client signs a SIWE message with the connected wallet; we verify the
+     * signature server-side (signature recovery — EOA wallets) and only then
+     * exchange `{ address, message, signature }` with the backend for an API
+     * token. The legacy address-only `/auth/wallet/login` flow was deliberately
+     * NOT ported.
+     */
+    CredentialsProvider({
+      id: 'siwe',
+      name: 'Sign-In With Ethereum',
+      credentials: {
+        message: { label: 'Message', type: 'text' },
+        signature: { label: 'Signature', type: 'text' },
+      },
+      async authorize(credentials, req) {
+        if (!credentials?.message || !credentials?.signature) {
+          throw new Error('Missing SIWE message or signature', { cause: 'AuthenticationError' });
+        }
+
+        const message = credentials.message;
+        const signature = credentials.signature as `0x${string}`;
+        const fields = parseSiweMessage(message);
+
+        // The nonce is the next-auth CSRF token, bound to the caller's cookies.
+        const nonce = await getCsrfToken({ req: { headers: req.headers } });
+        const isMessageValid = validateSiweMessage({
+          message: fields,
+          nonce: nonce ?? undefined,
+        });
+        if (!isMessageValid || !fields.address) {
+          throw new Error('Invalid SIWE message', { cause: 'AuthenticationError' });
+        }
+
+        const recovered = await recoverMessageAddress({ message, signature });
+        if (recovered.toLowerCase() !== fields.address.toLowerCase()) {
+          throw new Error('Invalid SIWE signature', { cause: 'AuthenticationError' });
+        }
+
+        // Exchange the verified signature for backend API tokens.
+        const login = await fetchWithOutAuth<LoginResponse>(`${API_BASE}/auth/wallet/login`, {
+          method: 'POST',
+          body: JSON.stringify({ address: fields.address, message, signature }),
+        });
+        if (!login.success || !login.data?.access_token) {
+          throw new Error(login.error ?? 'Wallet authentication failed', {
+            cause: 'AuthenticationError',
+          });
+        }
+
+        const profile = await fetchProfile(login.data.access_token);
+        if (!profile.success || !profile.data) {
+          throw new Error(profile.error ?? 'Wallet authentication failed', {
+            cause: 'AuthenticationError',
+          });
+        }
+        return toSessionUser(profile.data, login.data);
+      },
+    }),
+  ],
+  pages: {
+    signIn: '/?login=true',
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.user = {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          accessToken: user.accessToken,
+          refreshToken: user.refreshToken,
+          twitterLinked: user.twitterLinked ?? false,
+          googleLinked: user.googleLinked ?? false,
+          provider: user.provider,
+        };
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token?.user?.accessToken) {
+        return {
+          ...session,
+          user: {
+            accessToken: token.user.accessToken,
+            id: token.user.id ?? '',
+            name: token.user.name ?? '',
+            refreshToken: token.user.refreshToken ?? '',
+            email: token.user.email ?? '',
+            twitterLinked: token.user.twitterLinked ?? false,
+            googleLinked: token.user.googleLinked ?? false,
+            provider: token.user.provider ?? ProviderType.CREDENTIALS,
+          },
+        };
+      }
+      return session;
+    },
+  },
+  session: {
+    strategy: 'jwt',
+    maxAge: 3600 * 3, // match backend access-token lifetime (3h)
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+};
