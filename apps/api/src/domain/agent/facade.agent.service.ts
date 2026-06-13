@@ -75,16 +75,35 @@ export class FacadeAgentService {
   }
 
   async getAgentBalances(agentId: string): Promise<AgentBalanceApiResponse> {
-    const client = this.getReadOnlyClient();
-    const agent = await client.aggregate(agentId);
+    try {
+      const client = this.getReadOnlyClient();
+      const agent = await client.aggregate(agentId);
 
-    return {
-      balance: agent.balance.toString(),
-      pending: agent.locked.toString(),
-      total: (agent.balance + agent.locked).toString(),
-      nativeBalance: agent.nativeBalance.toString(),
-      rvTokenBalance: agent.rvTokenBalance.toString(),
-    };
+      return {
+        balance: agent.balance.toString(),
+        pending: agent.locked.toString(),
+        total: (agent.balance + agent.locked).toString(),
+        nativeBalance: agent.nativeBalance.toString(),
+        rvTokenBalance: agent.rvTokenBalance.toString(),
+      };
+    } catch (error) {
+      // On-chain balances are enrichment: when the marketplace contract is not
+      // reachable at the configured address (e.g. no deployment on the active
+      // RPC, or the agent is DB-seeded / freshly created and not yet on-chain),
+      // the aggregate() read returns "0x" and decoding throws. Degrade to zeroed
+      // balances so the directory/profile still render from indexed data rather
+      // than 500-ing the whole endpoint.
+      this.logger?.warn?.(
+        `getAgentBalances(${agentId}): on-chain read unavailable, returning zeros (${error?.message ?? error})`,
+      );
+      return {
+        balance: '0',
+        pending: '0',
+        total: '0',
+        nativeBalance: '0',
+        rvTokenBalance: '0',
+      };
+    }
   }
 
   private getSigner(userPrivateKey: string): ContractClient {
