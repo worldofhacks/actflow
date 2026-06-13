@@ -14,6 +14,7 @@
       "persistent": true
     },
     "hackathon:e2e": {
+      "dependsOn": ["^build"],
       "cache": false
     }
   }

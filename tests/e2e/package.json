@@ -1,0 +1,25 @@
+{
+  "name": "@actflow/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Headless golden-path end-to-end runner for ActFlow. Exercises the REAL package code (ENS identity assembly, ERC-8004 reputation, x402 payment, Uniswap swap quote, World ID free-trial gating) in LABELED MOCK/FIXTURE mode — no funds or credentials required. Invoked by `pnpm hackathon:e2e`.",
+  "type": "module",
+  "scripts": {
+    "hackathon:e2e": "node src/runner.mjs",
+    "build": "echo \"@actflow/e2e: nothing to build (runner is plain ESM)\"",
+    "lint": "echo \"no lint configured\""
+  },
+  "dependencies": {
+    "@actflow/agents": "workspace:*",
+    "@actflow/integrations-ens": "workspace:*",
+    "@actflow/integrations-uniswap": "workspace:*",
+    "@actflow/integrations-x402": "workspace:*",
+    "@actflow/reputation": "workspace:*",
+    "@actflow/sdk": "workspace:*",
+    "api": "workspace:*",
+    "viem": "^2.52.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0"
+  }
+}

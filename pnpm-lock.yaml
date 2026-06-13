@@ -482,6 +482,37 @@ importers:
         specifier: ^5.8.0
         version: 5.9.3
 
+  tests/e2e:
+    dependencies:
+      '@actflow/agents':
+        specifier: workspace:*
+        version: link:../../packages/agents
+      '@actflow/integrations-ens':
+        specifier: workspace:*
+        version: link:../../packages/integrations/ens
+      '@actflow/integrations-uniswap':
+        specifier: workspace:*
+        version: link:../../packages/integrations/uniswap
+      '@actflow/integrations-x402':
+        specifier: workspace:*
+        version: link:../../packages/integrations/x402
+      '@actflow/reputation':
+        specifier: workspace:*
+        version: link:../../services/reputation
+      '@actflow/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      api:
+        specifier: workspace:*
+        version: link:../../apps/api
+      viem:
+        specifier: ^2.52.2
+        version: 2.52.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.15.0
+        version: 22.19.21
+
 packages:
 
   '@a2a-js/sdk@0.3.13':

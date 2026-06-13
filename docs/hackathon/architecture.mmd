@@ -1,0 +1,68 @@
+%% ActFlow — system architecture (hackathon submission)
+%% Source-of-truth diagram for the hand-authored architecture.svg in this folder.
+%% Verified against the monorepo: ports, package names, chain ids, contracts and
+%% external systems all map to real code (see PRIZE-TRACKER.md / PROVENANCE.md).
+%%
+%% Three core flows are highlighted in the SVG:
+%%   IDENTITY   = ENS (mainnet resolution / Sepolia subnames) + ERC-8004 registries
+%%   REPUTATION = ERC-8004 logs via BigQuery -> reputation service -> leaderboard
+%%   PAYMENT    = hire -> HTTP 402 -> x402 EIP-3009 / Arc USDC escrow -> receipt
+%%                (World ID nullifier free-trial branch short-circuits payment)
+
+flowchart LR
+  %% ---------- Actors ----------
+  user([Human user<br/>browser])
+  agent([AI agents<br/>swap / research / actle])
+
+  %% ---------- ActFlow surfaces ----------
+  subgraph ActFlow["ActFlow monorepo (github.com/worldofhacks/actflow)"]
+    web["apps/web — Next.js :3400<br/>/discover · /leaderboard · /agent/[id] · hire · World ID"]
+    api["apps/api — NestJS :3401<br/>payments (402) · world verify · blockchain indexer"]
+    rep["services/reputation :3402<br/>BigQuery scorer · /leaderboard"]
+
+    subgraph pkgs["packages/"]
+      agents["@actflow/agents<br/>Mastra runtime + tools"]
+      mcp["@actflow/mcp<br/>agent:// task:// · search · resolve-ens-agent"]
+      sdk["@actflow/sdk<br/>ABIs · arcTestnet 5042002 · USDC 0x3600…0000"]
+      contracts["@actflow/contracts<br/>ActMarketplaceEVM + AgentIdentityExtension"]
+      ens_i["integrations/ens"]
+      uni_i["integrations/uniswap"]
+      privy_i["integrations/privy"]
+      x402_i["integrations/x402 (EIP-3009)"]
+    end
+  end
+
+  %% ---------- External systems ----------
+  ENS[["ENS — Ethereum mainnet resolution<br/>+ Sepolia subnames (ENSIP-25/26)"]]
+  ERC8004[["ERC-8004 registries — Ethereum mainnet<br/>via BigQuery public dataset"]]
+  UNI[["Uniswap Trading API"]]
+  ARC[["Arc testnet (5042002)<br/>USDC escrow + x402 payments"]]
+  PRIVY[["Privy server wallets"]]
+  WORLD[["World ID — cloud proof verify"]]
+
+  %% ---------- Edges ----------
+  user --> web
+  agent --> mcp
+  web --> api
+  web --> rep
+  api --> agents
+  agents --> mcp
+  agents --> uni_i --> UNI
+  agents --> privy_i --> PRIVY
+
+  %% IDENTITY flow
+  web -. IDENTITY .-> ens_i -. mainnet/Sepolia .-> ENS
+  mcp -. resolve-ens-agent .-> ens_i
+  ens_i -. verify against .-> ERC8004
+  contracts -. AgentIdentityExtension .-> ENS
+
+  %% REPUTATION flow
+  rep == REPUTATION ==> ERC8004
+  rep == leaderboard ==> web
+
+  %% PAYMENT flow
+  web == hire/402 ==> api
+  api == x402 EIP-3009 ==> x402_i == USDC escrow ==> ARC
+  contracts -. escrow .-> ARC
+  api -. World free-trial branch .-> WORLD
+  sdk --- contracts

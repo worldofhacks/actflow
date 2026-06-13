@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="1010" viewBox="0 0 1560 1010" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <title>ActFlow — System Architecture</title>
+  <desc>ActFlow agent marketplace: actors, apps/web (Next.js 3400), apps/api (NestJS 3401), services/reputation (3402), packages (agents/Mastra, contracts, mcp, sdk, integrations), and external systems (ENS, ERC-8004 via BigQuery, Uniswap Trading API, Arc testnet, Privy, World ID). Three core flows: identity, reputation, payment.</desc>
+
+  <defs>
+    <marker id="ar-grey" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#64748b"/></marker>
+    <marker id="ar-id" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="ar-rep" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#16a34a"/></marker>
+    <marker id="ar-pay" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#d97706"/></marker>
+    <marker id="ar-world" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#7c3aed"/></marker>
+    <filter id="soft" x="-8%" y="-8%" width="116%" height="124%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <style>
+    .lbl { fill:#0f172a; font-weight:600; }
+    .sub { fill:#475569; font-size:12px; }
+    .port{ fill:#64748b; font-size:11.5px; font-family:'Consolas','Courier New',monospace; }
+    .grp-ttl{ fill:#334155; font-weight:700; font-size:13px; letter-spacing:.4px; }
+    .ext-ttl{ fill:#0f172a; font-weight:700; }
+    .chain{ fill:#64748b; font-size:11px; }
+    .edge{ fill:none; stroke-width:2.4; }
+    .edge-g{ stroke:#94a3b8; stroke-width:2; }
+    .edge-id{ stroke:#2563eb; }
+    .edge-rep{ stroke:#16a34a; stroke-width:3; }
+    .edge-pay{ stroke:#d97706; stroke-width:3; }
+    .edge-w{ stroke:#7c3aed; stroke-dasharray:6 4; }
+    .elbl{ font-size:11.5px; font-weight:700; }
+    .pill{ rx:4; ry:4; }
+  </style>
+
+  <rect x="0" y="0" width="1560" height="1010" fill="#f8fafc"/>
+  <text x="40" y="46" font-size="27" font-weight="800" fill="#0f172a">ActFlow — System Architecture</text>
+  <text x="40" y="71" font-size="13.5" fill="#475569">AI agent marketplace · github.com/worldofhacks/actflow · 3 core flows: IDENTITY (ENS + ERC-8004) · REPUTATION (BigQuery → leaderboard) · PAYMENT (hire → 402 → x402 / Arc USDC → receipt)</text>
+
+  <!-- ===================== ACTORS ===================== -->
+  <rect class="pill box" x="40" y="160" width="160" height="74" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6" filter="url(#soft)"/>
+  <text class="lbl" x="120" y="193" font-size="15" text-anchor="middle">Human user</text>
+  <text class="sub" x="120" y="213" text-anchor="middle">browser</text>
+
+  <rect class="box" x="40" y="500" width="160" height="86" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6" filter="url(#soft)"/>
+  <text class="lbl" x="120" y="530" font-size="15" text-anchor="middle">AI agents</text>
+  <text class="sub" x="120" y="550" text-anchor="middle">swap · research</text>
+  <text class="sub" x="120" y="567" text-anchor="middle">actle (Mastra)</text>
+
+  <!-- ===================== MONOREPO CONTAINER ===================== -->
+  <rect x="260" y="120" width="700" height="800" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="280" y="146" class="grp-ttl">ActFlow monorepo</text>
+
+  <!-- apps/web -->
+  <rect class="box" x="290" y="162" width="300" height="84" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.6" filter="url(#soft)"/>
+  <text class="lbl" x="306" y="190" font-size="15">apps/web</text>
+  <text class="port" x="420" y="190">Next.js :3400</text>
+  <text class="sub" x="306" y="212">/discover · /leaderboard · /agent/[id]</text>
+  <text class="sub" x="306" y="230">hire flow · World ID widget</text>
+
+  <!-- apps/api -->
+  <rect class="box" x="290" y="294" width="300" height="92" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.6" filter="url(#soft)"/>
+  <text class="lbl" x="306" y="322" font-size="15">apps/api</text>
+  <text class="port" x="406" y="322">NestJS :3401</text>
+  <text class="sub" x="306" y="344">payments (402) · world verify</text>
+  <text class="sub" x="306" y="362">blockchain indexer · marketplace</text>
+
+  <!-- services/reputation -->
+  <rect class="box" x="630" y="294" width="300" height="92" rx="10" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.6" filter="url(#soft)"/>
+  <text class="lbl" x="646" y="322" font-size="15">services/reputation</text>
+  <text class="port" x="838" y="322">:3402</text>
+  <text class="sub" x="646" y="344">BigQuery scorer over ERC-8004</text>
+  <text class="sub" x="646" y="362">/leaderboard · fixture | live</text>
+
+  <!-- packages subgroup -->
+  <rect x="290" y="430" width="640" height="312" rx="12" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="306" y="454" class="grp-ttl">packages/</text>
+
+  <rect class="box" x="308" y="468" width="280" height="64" rx="9" fill="#ffffff" stroke="#64748b" stroke-width="1.4" filter="url(#soft)"/>
+  <text class="lbl" x="322" y="493" font-size="14">@actflow/agents</text>
+  <text class="sub" x="322" y="513">Mastra runtime · swap/pay tools</text>
+
+  <rect class="box" x="612" y="468" width="300" height="64" rx="9" fill="#ffffff" stroke="#64748b" stroke-width="1.4" filter="url(#soft)"/>
+  <text class="lbl" x="626" y="493" font-size="14">@actflow/mcp</text>
+  <text class="sub" x="626" y="513">agent:// task:// · search · resolve-ens</text>
+
+  <rect class="box" x="308" y="546" width="280" height="72" rx="9" fill="#ffffff" stroke="#64748b" stroke-width="1.4" filter="url(#soft)"/>
+  <text class="lbl" x="322" y="571" font-size="14">@actflow/contracts</text>
+  <text class="sub" x="322" y="591">ActMarketplaceEVM +</text>
+  <text class="sub" x="322" y="608">AgentIdentityExtension</text>
+
+  <rect class="box" x="612" y="546" width="300" height="72" rx="9" fill="#ffffff" stroke="#64748b" stroke-width="1.4" filter="url(#soft)"/>
+  <text class="lbl" x="626" y="571" font-size="14">@actflow/sdk</text>
+  <text class="sub" x="626" y="591">ABIs · arcTestnet 5042002</text>
+  <text class="sub" x="626" y="608">USDC 0x3600…0000 · IWalletProvider</text>
+
+  <!-- integrations -->
+  <text x="322" y="650" class="grp-ttl">integrations/</text>
+  <rect class="box" x="308" y="660" width="140" height="56" rx="9" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4" filter="url(#soft)"/>
+  <text class="lbl" x="378" y="686" font-size="13" text-anchor="middle">ens</text>
+  <text class="sub" x="378" y="704" text-anchor="middle">28 tests</text>
+
+  <rect class="box" x="460" y="660" width="140" height="56" rx="9" fill="#fff7ed" stroke="#d97706" stroke-width="1.4" filter="url(#soft)"/>
+  <text class="lbl" x="530" y="686" font-size="13" text-anchor="middle">uniswap</text>
+  <text class="sub" x="530" y="704" text-anchor="middle">24 tests</text>
+
+  <rect class="box" x="612" y="660" width="140" height="56" rx="9" fill="#fdf4ff" stroke="#a21caf" stroke-width="1.4" filter="url(#soft)"/>
+  <text class="lbl" x="682" y="686" font-size="13" text-anchor="middle">privy</text>
+  <text class="sub" x="682" y="704" text-anchor="middle">22 tests</text>
+
+  <rect class="box" x="764" y="660" width="148" height="56" rx="9" fill="#fffbeb" stroke="#d97706" stroke-width="1.4" filter="url(#soft)"/>
+  <text class="lbl" x="838" y="682" font-size="13" text-anchor="middle">x402</text>
+  <text class="sub" x="838" y="700" text-anchor="middle">EIP-3009 · 29 tests</text>
+
+  <!-- footer facts -->
+  <text x="290" y="784" class="sub" font-size="12.5">All packages build green · contracts 37 tests · agents 42 · reputation 35 · world 11 · payments 8</text>
+  <text x="290" y="808" class="sub" font-size="12.5">Continuity tags: hackathon-start → monorepo-assembled → phase2-ens → phase3-reputation → phase4-payments → phase5-worldid</text>
+  <text x="290" y="832" class="sub" font-size="12.5">Mock / fixture modes are explicitly labeled in code; go live on user creds (GCP JSON · Privy app-id · Arc faucet · ANTHROPIC_API_KEY)</text>
+
+  <!-- ===================== EXTERNAL SYSTEMS ===================== -->
+  <text x="1110" y="146" class="grp-ttl">External systems &amp; chains</text>
+
+  <rect class="box" x="1110" y="162" width="420" height="72" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8" filter="url(#soft)"/>
+  <text class="ext-ttl" x="1128" y="190" font-size="15">ENS</text>
+  <text class="chain" x="1128" y="210">mainnet resolution · Sepolia subnames</text>
+  <text class="chain" x="1128" y="226">ENSIP-25 / 26 records · AgentIdentityExtension</text>
+
+  <rect class="box" x="1110" y="256" width="420" height="74" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.8" filter="url(#soft)"/>
+  <text class="ext-ttl" x="1128" y="284" font-size="15">ERC-8004 registries + BigQuery</text>
+  <text class="chain" x="1128" y="304">Ethereum mainnet logs · bigquery-public-data</text>
+  <text class="chain" x="1128" y="320">SQL pinned to registry addrs + topic0</text>
+
+  <rect class="box" x="1110" y="352" width="420" height="60" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.8" filter="url(#soft)"/>
+  <text class="ext-ttl" x="1128" y="380" font-size="15">Uniswap Trading API</text>
+  <text class="chain" x="1128" y="399">live quotes · testnet execution path</text>
+
+  <rect class="box" x="1110" y="434" width="420" height="72" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.8" filter="url(#soft)"/>
+  <text class="ext-ttl" x="1128" y="462" font-size="15">Arc testnet · chain 5042002</text>
+  <text class="chain" x="1128" y="482">USDC escrow (deploy script)</text>
+  <text class="chain" x="1128" y="498">x402 EIP-3009 micropayments</text>
+
+  <rect class="box" x="1110" y="528" width="420" height="60" rx="10" fill="#fdf4ff" stroke="#a21caf" stroke-width="1.8" filter="url(#soft)"/>
+  <text class="ext-ttl" x="1128" y="556" font-size="15">Privy server wallets</text>
+  <text class="chain" x="1128" y="575">agent wallet provider · gated on app-id</text>
+
+  <rect class="box" x="1110" y="610" width="420" height="60" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.8" filter="url(#soft)"/>
+  <text class="ext-ttl" x="1128" y="638" font-size="15">World ID</text>
+  <text class="chain" x="1128" y="657">server-side v4 proof verify · nullifier free-trials</text>
+
+  <!-- ===================== INTERNAL WIRING ===================== -->
+  <!-- user -> web -->
+  <path class="edge edge-g" d="M200,197 L290,200" marker-end="url(#ar-grey)"/>
+  <!-- agents actor -> agents pkg -->
+  <path class="edge edge-g" d="M200,520 C250,512 270,505 308,500" marker-end="url(#ar-grey)"/>
+  <!-- web <-> api -->
+  <path class="edge edge-g" d="M430,246 L430,294" marker-end="url(#ar-grey)"/>
+  <!-- api -> agents pkg -->
+  <path class="edge edge-g" d="M380,386 L420,468" marker-end="url(#ar-grey)"/>
+  <!-- agents -> mcp -->
+  <path class="edge edge-g" d="M588,500 L612,500" marker-end="url(#ar-grey)"/>
+  <!-- sdk - contracts association -->
+  <path class="edge edge-g" d="M612,582 L588,582" stroke-dasharray="3 3"/>
+
+  <!-- web -> reputation (queries) -->
+  <path class="edge edge-g" d="M520,246 C600,262 650,278 690,294" marker-end="url(#ar-grey)"/>
+  <!-- REPUTATION: reputation -> web (leaderboard) -->
+  <path class="edge edge-rep" d="M680,294 C600,252 560,236 590,222" marker-end="url(#ar-rep)"/>
+  <rect x="612" y="252" width="86" height="18" rx="4" fill="#f0fdf4" stroke="#16a34a" stroke-width="0.8"/>
+  <text class="elbl" x="655" y="265" fill="#16a34a" text-anchor="middle">leaderboard</text>
+
+  <!-- ===================== RIGHT-CHANNEL BUS =====================
+       Package edges exit each box DOWNWARD to a collector lane (y=728),
+       run right into the clear channel (x 950..1110) on separate vertical
+       lanes, then turn horizontally into their external target. No line
+       crosses through any box's text. -->
+
+  <!-- IDENTITY: ens pkg -> ENS (lane x=952) -->
+  <path class="edge edge-id" d="M378,716 L378,728 L952,728 L952,196 L1110,196" marker-end="url(#ar-id)"/>
+  <!-- IDENTITY: contracts AgentIdentityExtension -> ENS (drop into gutter x=600, then collector) -->
+  <path class="edge edge-id" d="M588,600 L600,600 L600,726 L948,726 L948,214 L1110,214" stroke-dasharray="5 4" marker-end="url(#ar-id)"/>
+  <!-- IDENTITY: ens pkg verify-against -> ERC-8004 (lane x=962) -->
+  <path class="edge edge-id" d="M398,716 L398,732 L962,732 L962,300 L1110,300" stroke-dasharray="2 4" marker-end="url(#ar-id)"/>
+  <rect x="966" y="170" width="74" height="18" rx="4" fill="#eff6ff" stroke="#2563eb" stroke-width="0.8"/>
+  <text class="elbl" x="1003" y="183" fill="#2563eb" text-anchor="middle">IDENTITY</text>
+
+  <!-- REPUTATION: reputation -> ERC-8004 -->
+  <path class="edge edge-rep" d="M930,322 L1000,322 L1000,288 L1110,288" marker-end="url(#ar-rep)"/>
+  <rect x="936" y="300" width="94" height="18" rx="4" fill="#f0fdf4" stroke="#16a34a" stroke-width="0.8"/>
+  <text class="elbl" x="983" y="313" fill="#16a34a" text-anchor="middle">REPUTATION</text>
+
+  <!-- PAYMENT: api hire/402 -> x402 pkg (down the left side of packages) -->
+  <path class="edge edge-pay" d="M470,386 L470,420 L470,648 L764,672" marker-end="url(#ar-pay)"/>
+  <rect x="424" y="430" width="92" height="18" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="0.8"/>
+  <text class="elbl" x="470" y="443" fill="#d97706" text-anchor="middle">hire → 402</text>
+  <!-- PAYMENT: uniswap pkg -> Uniswap Trading API (lane x=974) -->
+  <path class="edge edge-pay" d="M530,716 L530,736 L974,736 L974,382 L1110,382" stroke-dasharray="5 4" marker-end="url(#ar-pay)"/>
+  <!-- PAYMENT: x402 pkg -> Arc (lane x=986) -->
+  <path class="edge edge-pay" d="M838,716 L838,740 L986,740 L986,464 L1110,464" marker-end="url(#ar-pay)"/>
+  <!-- PAYMENT: contracts escrow -> Arc (exit right edge, run in gutter below sdk, into lane) -->
+  <path class="edge edge-pay" d="M588,588 L606,588 L606,634 L986,634 L986,476 L1110,476" stroke-dasharray="2 4" marker-end="url(#ar-pay)"/>
+  <rect x="940" y="430" width="120" height="18" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="0.8"/>
+  <text class="elbl" x="1000" y="443" fill="#d97706" text-anchor="middle">x402 / USDC escrow</text>
+
+  <!-- privy pkg -> Privy (lane x=998) -->
+  <path class="edge edge-g" d="M682,716 L682,744 L998,744 L998,556 L1110,556" stroke-dasharray="5 4" marker-end="url(#ar-grey)"/>
+
+  <!-- WORLD free-trial branch: api -> World ID (lane x=1010, off the api right edge low) -->
+  <path class="edge edge-w" d="M590,372 L740,372 L740,640 L1110,640" marker-end="url(#ar-world)"/>
+  <rect x="744" y="628" width="120" height="18" rx="4" fill="#f5f3ff" stroke="#7c3aed" stroke-width="0.8"/>
+  <text class="elbl" x="804" y="641" fill="#7c3aed" text-anchor="middle">World free-trial</text>
+
+  <!-- ===================== LEGEND ===================== -->
+  <rect x="40" y="700" width="190" height="270" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="58" y="726" class="grp-ttl">Legend — flows</text>
+
+  <line x1="58" y1="750" x2="98" y2="750" class="edge edge-id"/>
+  <text x="106" y="754" font-size="12.5" fill="#0f172a">Identity</text>
+  <text x="58" y="772" font-size="10.5" fill="#64748b">ENS + ERC-8004</text>
+
+  <line x1="58" y1="794" x2="98" y2="794" class="edge edge-rep"/>
+  <text x="106" y="798" font-size="12.5" fill="#0f172a">Reputation</text>
+  <text x="58" y="816" font-size="10.5" fill="#64748b">BigQuery → leaderboard</text>
+
+  <line x1="58" y1="838" x2="98" y2="838" class="edge edge-pay"/>
+  <text x="106" y="842" font-size="12.5" fill="#0f172a">Payment</text>
+  <text x="58" y="860" font-size="10.5" fill="#64748b">402 → x402 / Arc USDC</text>
+
+  <line x1="58" y1="882" x2="98" y2="882" class="edge edge-w"/>
+  <text x="106" y="886" font-size="12.5" fill="#0f172a">World branch</text>
+  <text x="58" y="904" font-size="10.5" fill="#64748b">free-trial bypass</text>
+
+  <line x1="58" y1="926" x2="98" y2="926" class="edge edge-g"/>
+  <text x="106" y="930" font-size="12.5" fill="#0f172a">Wiring / calls</text>
+
+  <text x="58" y="952" font-size="10.5" fill="#64748b">Light box = ActFlow code</text>
+  <text x="58" y="966" font-size="10.5" fill="#64748b">Bold border = external system</text>
+
+  <text x="1530" y="996" font-size="10.5" fill="#94a3b8" text-anchor="end">ActFlow architecture · verified against monorepo (ports · package names · chain ids · contracts · tests)</text>
+</svg>
