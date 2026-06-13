@@ -2,7 +2,7 @@
   "name": "@actflow/agents",
   "version": "0.1.0",
   "private": true,
-  "description": "ActFlow agent runtime on Mastra — defineActflowAgent() factory, first-party agents, marketplace/wallet tool interfaces and the task-lifecycle workflow",
+  "description": "ActFlow agent runtime on Mastra \u2014 defineActflowAgent() factory, first-party agents, marketplace/wallet tool interfaces and the task-lifecycle workflow",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,11 +23,14 @@
   },
   "dependencies": {
     "@actflow/integrations-ens": "workspace:*",
+    "@actflow/integrations-privy": "workspace:*",
     "@actflow/integrations-uniswap": "workspace:*",
+    "@actflow/integrations-x402": "workspace:*",
     "@actflow/mcp": "workspace:*",
     "@mastra/core": "^1.42.0",
     "@mastra/mcp": "^1.10.0",
-    "zod": "^4.0.0"
+    "zod": "^4.0.0",
+    "@actflow/sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

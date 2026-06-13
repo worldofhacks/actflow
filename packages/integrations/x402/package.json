@@ -2,7 +2,7 @@
   "name": "@actflow/integrations-x402",
   "version": "0.1.0",
   "private": true,
-  "description": "x402-style USDC micropayments for ActFlow agents on Arc — build402Challenge / signPaymentAuthorization (EIP-3009 transferWithAuthorization) / verifyPayment, with a labeled MOCK mode. No hard-coded secrets; addresses/chain ids config-driven (Arc USDC is a cited constant).",
+  "description": "x402-style USDC micropayments for ActFlow agents on Arc \u2014 build402Challenge / signPaymentAuthorization (EIP-3009 transferWithAuthorization) / verifyPayment, with a labeled MOCK mode. No hard-coded secrets; addresses/chain ids config-driven (Arc USDC is a cited constant).",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,8 +22,8 @@
     "lint": "echo \"no lint configured\""
   },
   "dependencies": {
-    "@actflow/agents": "workspace:*",
-    "viem": "^2.52.2"
+    "viem": "^2.52.2",
+    "@actflow/sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

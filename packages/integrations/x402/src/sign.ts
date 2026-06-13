@@ -15,7 +15,7 @@
  * transferWithAuthorization.
  */
 import { keccak256, toHex } from "viem";
-import type { IWalletProvider } from "@actflow/agents";
+import type { IWalletProvider } from "@actflow/sdk";
 import { buildTypedData } from "./eip3009.js";
 import type {
   PaymentChallenge,

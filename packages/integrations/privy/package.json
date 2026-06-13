@@ -2,7 +2,7 @@
   "name": "@actflow/integrations-privy",
   "version": "0.1.0",
   "private": true,
-  "description": "Privy server-wallet provider for ActFlow agents — implements the agents' IWalletProvider (getAddress/getBalance/pay) backed by Privy server wallets on Arc, with a labeled MOCK mode when no creds are present. No hard-coded secrets; addresses/chain ids config-driven.",
+  "description": "Privy server-wallet provider for ActFlow agents \u2014 implements the agents' IWalletProvider (getAddress/getBalance/pay) backed by Privy server wallets on Arc, with a labeled MOCK mode when no creds are present. No hard-coded secrets; addresses/chain ids config-driven.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,9 +25,9 @@
     "lint": "echo \"no lint configured\""
   },
   "dependencies": {
-    "@actflow/agents": "workspace:*",
     "@privy-io/node": "0.21.0",
-    "viem": "^2.52.2"
+    "viem": "^2.52.2",
+    "@actflow/sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

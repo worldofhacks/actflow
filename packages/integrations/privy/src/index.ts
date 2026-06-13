@@ -34,10 +34,10 @@ export {
 } from "./mock-wallet.js";
 
 // Re-export the wallet interface types this provider implements, so consumers
-// can type against them without a direct @actflow/agents import.
+// can type against them without a direct @actflow/sdk import.
 export type {
   IWalletProvider,
   WalletBalance,
   PaymentRequest,
   PaymentResult,
-} from "@actflow/agents";
+} from "@actflow/sdk";

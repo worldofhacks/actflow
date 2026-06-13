@@ -4,14 +4,23 @@ import { PageHeader, PageHeaderDescription, PageHeaderTitle } from '@/components
 import SharedTaskForm from '@/components/task/shared-task-form';
 import { getAllUserWalletsInfo } from '@/lib/service/wallet.service';
 import { AgentDetails } from '@/types/agent/agent';
-import { HireFreeTrial } from './hire-free-trial';
+import { HireFlow } from './hire-flow';
+
 interface HireAIAgentProps {
   agent: AgentDetails;
 }
 
+/**
+ * Hire surface for an agent.
+ *
+ * The primary path is the hire -> pay -> receipt flow (HireFlow): World free
+ * trial OR x402 USDC payment on Arc, then a receipt + live task status. The
+ * existing "define a task" form is kept as a secondary step (the footer slot) so
+ * a buyer can spec a concrete task; the AgentCard sits in the sidebar.
+ */
 const HireAIAgent = async ({ agent }: HireAIAgentProps) => {
   const userRole = await getUserRoleFromCookies();
-  // Get user wallets
+  // Get user wallets (used by the task-definition form below).
   const wallets = await getAllUserWalletsInfo();
   if (wallets.error || !wallets.data) {
     throw new Error(wallets.error);
@@ -23,14 +32,21 @@ const HireAIAgent = async ({ agent }: HireAIAgentProps) => {
       <PageHeader>
         <PageHeaderTitle>Hire {agent.metadata?.name || 'Agent'} for Your Project</PageHeaderTitle>
         <PageHeaderDescription>
-          Define the task details, budget, and timeline before confirming the hire.
+          Pay per task in USDC on Arc — or use a free World ID run — then track the task to its
+          receipt.
         </PageHeaderDescription>
       </PageHeader>
+
       <div className="w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <HireFreeTrial />
-            <div id="hire-task-form">
+        <HireFlow
+          agent={agent}
+          sidebarTop={<AgentCard userRole={userRole} agent={agent} />}
+          footer={
+            <div id="hire-task-form" className="space-y-2">
+              <h2 className="font-onest text-lg font-semibold text-white">Define a custom task</h2>
+              <p className="text-sm text-muted-foreground">
+                Optionally spec the task details, budget and timeline for this agent.
+              </p>
               <SharedTaskForm
                 wallets={userWallets}
                 topics={[agent.topic || '']}
@@ -40,13 +56,8 @@ const HireAIAgent = async ({ agent }: HireAIAgentProps) => {
                 isHireScenario={true}
               />
             </div>
-          </div>
-
-          {/* Right Side */}
-          <div className="space-y-6">
-            <AgentCard userRole={userRole} agent={agent} />
-          </div>
-        </div>
+          }
+        />
       </div>
     </div>
   );

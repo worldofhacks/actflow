@@ -12,6 +12,8 @@
     "lint": "echo \"lint: no-op\""
   },
   "dependencies": {
+    "@actflow/integrations-x402": "workspace:*",
+    "@actflow/sdk": "workspace:*",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "4.0.0",
     "@nestjs/core": "^10.0.0",

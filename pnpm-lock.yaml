@@ -20,6 +20,12 @@ importers:
 
   apps/api:
     dependencies:
+      '@actflow/integrations-x402':
+        specifier: workspace:*
+        version: link:../../packages/integrations/x402
+      '@actflow/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
       '@nestjs/common':
         specifier: ^10.0.0
         version: 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -123,6 +129,9 @@ importers:
       '@actflow/integrations-ens':
         specifier: workspace:*
         version: link:../../packages/integrations/ens
+      '@actflow/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.78.0(react@19.2.7))
@@ -295,12 +304,21 @@ importers:
       '@actflow/integrations-ens':
         specifier: workspace:*
         version: link:../integrations/ens
+      '@actflow/integrations-privy':
+        specifier: workspace:*
+        version: link:../integrations/privy
       '@actflow/integrations-uniswap':
         specifier: workspace:*
         version: link:../integrations/uniswap
+      '@actflow/integrations-x402':
+        specifier: workspace:*
+        version: link:../integrations/x402
       '@actflow/mcp':
         specifier: workspace:*
         version: link:../mcp
+      '@actflow/sdk':
+        specifier: workspace:*
+        version: link:../sdk
       '@mastra/core':
         specifier: ^1.42.0
         version: 1.42.0(bufferutil@4.1.0)(express@5.2.1)(rxjs@7.8.2)(utf-8-validate@5.0.10)(zod@4.4.3)
@@ -367,9 +385,9 @@ importers:
 
   packages/integrations/privy:
     dependencies:
-      '@actflow/agents':
+      '@actflow/sdk':
         specifier: workspace:*
-        version: link:../../agents
+        version: link:../../sdk
       '@privy-io/node':
         specifier: 0.21.0
         version: 0.21.0(@solana/kit@5.5.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10))(viem@2.52.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3))
@@ -399,9 +417,9 @@ importers:
 
   packages/integrations/x402:
     dependencies:
-      '@actflow/agents':
+      '@actflow/sdk':
         specifier: workspace:*
-        version: link:../../agents
+        version: link:../../sdk
       viem:
         specifier: ^2.52.2
         version: 2.52.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.4.3)

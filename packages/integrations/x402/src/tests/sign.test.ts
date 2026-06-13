@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { privateKeyToAccount } from "viem/accounts";
-import { MockWalletProvider } from "@actflow/agents";
+import { MockWalletProvider } from "@actflow/sdk";
 import { build402Challenge } from "../challenge.js";
 import { signPaymentAuthorization, challengeToMessage } from "../sign.js";
 import {

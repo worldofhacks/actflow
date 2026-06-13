@@ -14,6 +14,7 @@ import { DashboardController } from './dashboard.controller';
 import { DomainModule } from './domain/domain.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { NotificationModule } from './notification/notification.module';
+import { PaymentsModule } from './payments/payments.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { StaticDataModule } from './static/static.module';
 import { TaskModule } from './task/task.module';
@@ -49,6 +50,7 @@ import { WorldModule } from './world/world.module';
     DomainModule,
     ContractConfigModule,
     WorldModule,
+    PaymentsModule,
   ],
   controllers: [AppController, DashboardController],
   providers: [AppService],

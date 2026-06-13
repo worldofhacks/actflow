@@ -1,3 +1,7 @@
+// Shared cross-package interfaces (kept here, in a dependency-free leaf
+// package, to avoid an agents <-> integrations dependency cycle)
+export * from "./interfaces/wallet-provider";
+
 // Export event types
 export * from "./types/events";
 export * from "./types/params";

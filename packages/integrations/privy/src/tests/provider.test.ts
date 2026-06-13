@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { isAddress } from "viem";
-import { MockWalletProvider, type IWalletProvider } from "@actflow/agents";
+import { MockWalletProvider, type IWalletProvider } from "@actflow/sdk";
 import { PrivyWalletProvider, createPrivyWalletProvider } from "../provider.js";
 import { createMockWallet } from "../mock-wallet.js";
 
 /**
  * UNIT: IWalletProvider conformance of the MOCK Privy provider. NO live Privy or
  * Arc calls — mock mode only. Verifies the provider matches the exact interface
- * exported by @actflow/agents (getAddress/getBalance/pay) and tags mock results.
+ * exported by @actflow/sdk (getAddress/getBalance/pay) and tags mock results.
  */
 
 function mockProvider(label?: string): PrivyWalletProvider {

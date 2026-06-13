@@ -29,6 +29,15 @@ export const configSchema = Joi.object({
   WORLD_SIGNER_KEY: Joi.string().optional().allow(''),
   WORLD_API_HOST: Joi.string().optional().allow(''),
   WORLD_FREE_TRIALS: Joi.number().optional(),
+  // --- x402 / Arc USDC payments (all OPTIONAL; chain/USDC config comes from @actflow/sdk) ---
+  // No funds/creds in this environment -> the x402 layer settles via its labeled MOCK path.
+  PAYMENTS_ESCROW_ADDRESS: Joi.string().optional().allow(''),
+  PAYMENTS_DEFAULT_PRICE: Joi.string().optional().allow(''),
+  PAYMENTS_CHALLENGE_TTL: Joi.number().optional(),
+  X402_FORCE_MOCK: Joi.string().optional().allow(''),
+  ARC_TESTNET_RPC_URL: Joi.string().optional().allow(''),
+  ARC_CHAIN_ID: Joi.string().optional().allow(''),
+  ARC_USDC_ADDRESS: Joi.string().optional().allow(''),
 }).unknown(true);
 
 export default registerAs('app', () => {
@@ -56,6 +65,13 @@ export default registerAs('app', () => {
       apiKey: process.env.WORLD_API_KEY,
       signerKey: process.env.WORLD_SIGNER_KEY,
       apiHost: process.env.WORLD_API_HOST,
+    },
+    payments: {
+      // Chain id / USDC address / explorer all come from @actflow/sdk at runtime.
+      escrowAddress: process.env.PAYMENTS_ESCROW_ADDRESS,
+      defaultPrice: process.env.PAYMENTS_DEFAULT_PRICE,
+      challengeTtl: process.env.PAYMENTS_CHALLENGE_TTL,
+      forceMock: process.env.X402_FORCE_MOCK,
     },
   };
 });

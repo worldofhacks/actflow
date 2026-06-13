@@ -7,7 +7,16 @@
     "moduleResolution": "bundler",
     "outDir": "dist",
     "rootDir": "src",
-    "types": ["node"]
+    "types": ["node"],
+    // The integration packages we depend on (@actflow/integrations-x402,
+    // -privy) re-export this package's IWalletProvider from "@actflow/agents".
+    // Without this alias, tsc follows that import into our OWN dist/*.d.ts and
+    // tries to re-emit it (TS5055). Resolve the self-reference to source so the
+    // cycle stays within this compilation and nothing in dist is treated as
+    // input. Does not affect runtime resolution (which uses the built dist).
+    "paths": {
+      "@actflow/agents": ["./src/index.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["dist", "node_modules"]

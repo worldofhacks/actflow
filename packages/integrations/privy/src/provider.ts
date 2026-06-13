@@ -10,7 +10,7 @@
  *    Every result is tagged `mock: true`; no Privy account or funds required.
  *
  * The IWalletProvider shape is matched structurally AND verified against the real
- * interface from @actflow/agents in the conformance test. Wallet secrets are
+ * interface from @actflow/sdk in the conformance test. Wallet secrets are
  * never logged. The Privy SDK is imported dynamically so this module loads even
  * when @privy-io/node is not installed (mock-only environments).
  */
@@ -30,7 +30,7 @@ import type {
   WalletBalance,
   PaymentRequest,
   PaymentResult,
-} from "@actflow/agents";
+} from "@actflow/sdk";
 import {
   resolvePrivyConfig,
   type PrivyProviderConfig,
