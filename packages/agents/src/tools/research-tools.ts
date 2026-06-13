@@ -35,10 +35,13 @@ export const webResearch = createTool({
     mock: z.boolean(),
   }),
   execute: async ({ query, maxResults }) => {
+    // Optional input flows through typed as possibly undefined — re-apply the
+    // schema default (5).
+    const resolvedMaxResults = maxResults ?? 5;
     // MOCK: no live web access wired yet.
     return {
       query,
-      findings: Array.from({ length: Math.min(maxResults, 3) }, (_, i) => ({
+      findings: Array.from({ length: Math.min(resolvedMaxResults, 3) }, (_, i) => ({
         title: `[MOCK] Finding ${i + 1} for "${query}"`,
         summary:
           "Placeholder result — web research backend is not wired yet in this phase.",

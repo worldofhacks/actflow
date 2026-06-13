@@ -22,26 +22,45 @@ async function exec(tool: unknown, input: Record<string, unknown>) {
   return (tool as any).execute(input);
 }
 
-test("swapQuote validates input via zod", () => {
-  assert.equal(swapQuote.inputSchema!.safeParse({}).success, false);
+// Mastra types tool.inputSchema as StandardSchemaWithJSON, which exposes no
+// zod .safeParse. Validate through the standard-schema "~standard".validate
+// API instead — this exercises the exact schema Mastra validates input with
+// (zod defaults included).
+async function safeParse(
+  schema: unknown,
+  input: unknown,
+): Promise<{ success: boolean; data?: Record<string, unknown> }> {
+  const result = await (
+    schema as {
+      "~standard": { validate: (value: unknown) => unknown };
+    }
+  )["~standard"].validate(input);
+  const r = result as { issues?: readonly unknown[]; value?: unknown };
+  return r.issues === undefined
+    ? { success: true, data: r.value as Record<string, unknown> }
+    : { success: false };
+}
+
+test("swapQuote validates input via zod", async () => {
+  assert.equal((await safeParse(swapQuote.inputSchema, {})).success, false);
   assert.equal(
-    swapQuote
-      .inputSchema!.safeParse({
+    (
+      await safeParse(swapQuote.inputSchema, {
         tokenIn: "USDC",
         tokenOut: "WETH",
         amountIn: "not-a-number",
       })
-      .success,
+    ).success,
     false,
   );
-  const parsed = swapQuote.inputSchema!.safeParse({
+  const parsed = await safeParse(swapQuote.inputSchema, {
     tokenIn: "USDC",
     tokenOut: "WETH",
     amountIn: "100.5",
   });
   assert.equal(parsed.success, true);
   // default chainId applied by the schema
-  assert.equal((parsed as { data: { chainId: number } }).data.chainId, 1);
+  assert.equal(parsed.data?.chainId, 1);
 });
 
 test("swapQuote / swapExecute return clearly-marked mock data", async () => {
@@ -62,15 +81,19 @@ test("swapQuote / swapExecute return clearly-marked mock data", async () => {
   assert.equal(result.status, "mocked");
 });
 
-test("swapExecute rejects out-of-range slippage", () => {
+test("swapExecute rejects out-of-range slippage", async () => {
   assert.equal(
-    swapExecute.inputSchema!.safeParse({ quoteId: "q", slippageBps: 0 })
+    (await safeParse(swapExecute.inputSchema, { quoteId: "q", slippageBps: 0 }))
       .success,
     false,
   );
   assert.equal(
-    swapExecute.inputSchema!.safeParse({ quoteId: "q", slippageBps: 9999 })
-      .success,
+    (
+      await safeParse(swapExecute.inputSchema, {
+        quoteId: "q",
+        slippageBps: 9999,
+      })
+    ).success,
     false,
   );
 });
@@ -93,7 +116,7 @@ test("marketplace tools call through the injected IMarketplaceClient", async () 
 
   const tools = createMarketplaceTools(fake);
   assert.equal(
-    tools.acceptTask.inputSchema!.safeParse({}).success,
+    (await safeParse(tools.acceptTask.inputSchema, {})).success,
     false,
     "taskId must be required",
   );
@@ -106,21 +129,26 @@ test("marketplace tools call through the injected IMarketplaceClient", async () 
 test("wallet pay tool enforces address/amount formats", async () => {
   const tools = createWalletTools();
   assert.equal(
-    tools.pay.inputSchema!.safeParse({ to: "bob", amount: "1" }).success,
+    (await safeParse(tools.pay.inputSchema, { to: "bob", amount: "1" }))
+      .success,
     false,
   );
   assert.equal(
-    tools.pay.inputSchema!.safeParse({
-      to: "0x1111111111111111111111111111111111111111",
-      amount: "1.x",
-    }).success,
+    (
+      await safeParse(tools.pay.inputSchema, {
+        to: "0x1111111111111111111111111111111111111111",
+        amount: "1.x",
+      })
+    ).success,
     false,
   );
   assert.equal(
-    tools.pay.inputSchema!.safeParse({
-      to: "0x1111111111111111111111111111111111111111",
-      amount: "1.50",
-    }).success,
+    (
+      await safeParse(tools.pay.inputSchema, {
+        to: "0x1111111111111111111111111111111111111111",
+        amount: "1.50",
+      })
+    ).success,
     true,
   );
 
@@ -130,7 +158,10 @@ test("wallet pay tool enforces address/amount formats", async () => {
 });
 
 test("webResearch is a marked stub with bounded results", async () => {
-  assert.equal(webResearch.inputSchema!.safeParse({ query: "" }).success, false);
+  assert.equal(
+    (await safeParse(webResearch.inputSchema, { query: "" })).success,
+    false,
+  );
   const out = await exec(webResearch, { query: "ERC-8004", maxResults: 2 });
   assert.equal(out.mock, true);
   assert.ok(out.findings.length <= 2);
@@ -150,7 +181,7 @@ test("generateImage preserves the old topic-suffix routing semantics", async () 
   );
 
   assert.equal(
-    generateImage.inputSchema!.safeParse({ prompt: "x", style: "bad" })
+    (await safeParse(generateImage.inputSchema, { prompt: "x", style: "bad" }))
       .success,
     false,
   );

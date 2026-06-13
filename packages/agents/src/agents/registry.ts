@@ -46,6 +46,5 @@ export function getAgentForTopic(
   topic: SupportedTopic,
 ): ActflowAgent | undefined {
   // Topic strings are bytes32-registered on-chain; matching is exact.
-  void TOPIC_TO_ACTION[topic];
   return listAgents().find((a) => a.topics.includes(topic));
 }

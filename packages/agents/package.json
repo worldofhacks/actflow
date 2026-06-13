@@ -18,7 +18,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "tsc && node --test dist/tests/",
+    "test": "tsc && node --test \"dist/tests/*.test.js\"",
     "lint": "echo \"no lint configured\""
   },
   "dependencies": {

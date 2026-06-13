@@ -51,19 +51,22 @@ export const generateImage = createTool({
     mock: z.boolean(),
   }),
   execute: async ({ prompt, style }) => {
+    // Optional input flows through typed as possibly undefined — re-apply the
+    // schema default ("gpt") so the output matches the non-optional schema.
+    const resolvedStyle = style ?? "gpt";
     // MOCK: no image API keys wired in this phase. The mix style still
     // demonstrates the "$act$"-joined multi-url contract.
     const url =
-      style === "mix"
+      resolvedStyle === "mix"
         ? ["https://example.com/mock-dalle.png", "https://example.com/mock-ideogram.png", "https://example.com/mock-gpt.png"].join(
             MIX_URL_SEPARATOR,
           )
-        : `https://example.com/mock-${style}.png`;
+        : `https://example.com/mock-${resolvedStyle}.png`;
     return {
       success: true,
       url,
       prompt,
-      style,
+      style: resolvedStyle,
       timestamp: new Date().toISOString(),
       mock: true,
     };

@@ -38,6 +38,9 @@ export const swapQuote = createTool({
     mock: z.boolean(),
   }),
   execute: async ({ tokenIn, tokenOut, amountIn, chainId }) => {
+    // Optional input flows through typed as possibly undefined — re-apply the
+    // schema default (1 = Ethereum mainnet) for the non-optional output.
+    const resolvedChainId = chainId ?? 1;
     // MOCK: fixed 1:1 rate. Phase 4 replaces this with the Uniswap Trading
     // API /quote endpoint.
     return {
@@ -46,7 +49,7 @@ export const swapQuote = createTool({
       tokenOut,
       amountIn,
       amountOut: amountIn,
-      chainId,
+      chainId: resolvedChainId,
       mock: true,
     };
   },
