@@ -1,0 +1,19 @@
+{
+  "name": "@actflow/seed",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Coherent demo seed for ActFlow. Inserts the SAME agents that back the reputation leaderboard fixtures (services/reputation) into the apps/api MongoDB marketplace, keyed by ERC-8004 owner address, so /discover (marketplace) and /leaderboard (ERC-8004 reputation blended with marketplace AgentStatistics) list the SAME agents. Idempotent upsert, clearly LABELED demo data. Run with `pnpm --filter @actflow/seed seed:demo` (requires MongoDB running per docs/hackathon/RUNBOOK.md).",
+  "type": "module",
+  "scripts": {
+    "seed:demo": "node src/seed-demo.mjs",
+    "build": "echo \"@actflow/seed: nothing to build (seed runner is plain ESM)\"",
+    "lint": "echo \"no lint configured\""
+  },
+  "dependencies": {
+    "@actflow/reputation": "workspace:*",
+    "mongodb": "^6.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0"
+  }
+}

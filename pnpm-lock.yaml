@@ -541,6 +541,19 @@ importers:
         specifier: ^22.15.0
         version: 22.19.21
 
+  tests/seed:
+    dependencies:
+      '@actflow/reputation':
+        specifier: workspace:*
+        version: link:../../services/reputation
+      mongodb:
+        specifier: ^6.21.0
+        version: 6.21.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.15.0
+        version: 22.19.21
+
 packages:
 
   '@a2a-js/sdk@0.3.13':

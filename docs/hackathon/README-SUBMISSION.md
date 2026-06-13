@@ -14,6 +14,12 @@ suites, and `docs/hackathon/PRIZE-TRACKER.md`. Where something runs in a labeled
 mock/fixture mode (because it is gated on a credential the user must provision),
 we say so explicitly and say exactly what flips it live.
 
+**Build + tests are green and CI is green on GitHub.** Under Node 22 / pnpm 10:
+`pnpm build` is **13/13** packages, `pnpm test` is **~331 tests across 25
+suites** (contracts 37, agents 62, api 28, mcp 10, ens 25, uniswap 22, privy 22,
+x402 29, reputation 35, unlink 24, web 37), and the end-to-end golden path
+`pnpm hackathon:e2e` is **5/5**.
+
 ---
 
 ## What ActFlow was *before* this weekend
@@ -39,8 +45,8 @@ Next.js frontend, and the Eliza agent character/task-handler logic). Everything
 *after* it is weekend feature work, landed across labeled phase tags:
 
 ```
-hackathon-start ─► monorepo-assembled ─► phase2-ens ─► phase3-reputation ─► phase4-payments ─► phase5-worldid
-└─ before ──────────────────────────┘└──────────────────── built this weekend ────────────────────────────┘
+hackathon-start ─► monorepo-assembled ─► phase2-ens ─► phase3-reputation ─► phase4-payments ─► phase5-worldid ─► phase6-unlink
+└─ before ──────────────────────────┘└─────────────────────────── built this weekend ──────────────────────────────────────┘
 ```
 
 Provenance honesty notes (from `PROVENANCE.md`):
@@ -58,28 +64,29 @@ Provenance honesty notes (from `PROVENANCE.md`):
 
 ## Built this weekend — per prize
 
-Monorepo layout (all packages build green under Node 22 / pnpm 10; `pnpm test`
-across the tree):
+Monorepo layout (all 13 packages build green under Node 22 / pnpm 10; `pnpm
+test` across the tree, ~331 tests / 25 suites):
 
 ```
 packages/contracts        @actflow/contracts        37 contract tests passing
 packages/sdk              @actflow/sdk              shared ABIs/types/chains/interfaces
-packages/agents           @actflow/agents           48 tests
-packages/mcp              @actflow/mcp              MCP server over the ActFlow API
+packages/agents           @actflow/agents           62 tests (identity provisioning + payouts + tools)
+packages/mcp              @actflow/mcp              10 tests — MCP server, 5 tools over the ActFlow API
 packages/integrations/ens         @actflow/integrations-ens       28 tests (25 pass, 3 live-gated skip)
 packages/integrations/uniswap     @actflow/integrations-uniswap   25 tests (22 pass, 3 live-gated skip)
 packages/integrations/privy       @actflow/integrations-privy     22 tests
 packages/integrations/unlink      @actflow/integrations-unlink    24 tests
 packages/integrations/x402        @actflow/integrations-x402      29 tests
 services/reputation       @actflow/reputation       35 tests
-apps/api                  api                       19 tests (world 11 + payments 8)
-apps/web                  web                       Next.js frontend
+apps/api                  api                       28 tests (world 11 + payments 12 + provisioning 5)
+apps/web                  web                       37 tests + Next.js frontend
 ```
 
 > Test counts are the authoritative numbers from running each suite under Node
 > 22 on 2026-06-13. The ENS and Uniswap suites each have 3 tests that **skip**
 > when their live credential (RPC / `UNISWAP_API_KEY`) is unset — they run when
-> the key is present.
+> the key is present. CI (`.github/workflows/ci.yml`) runs the same build + test
+> on every push and is **green on GitHub**.
 
 ---
 
@@ -108,19 +115,54 @@ end to end, with **zero hard-coded names, addresses, or chain ids**.
   name, address, or chain id** — all identity values are caller-supplied at
   runtime. Tested in `packages/contracts/test/agent-identity-extension.test.js`
   (part of the 37 passing).
-- **Agent self-registration path** — `packages/agents/src/identity/register-ens-identity.ts`
-  computes the subname, writes ENSIP records, and returns the `ensNode` +
-  `erc8004Id` for the `AgentIdentityExtension.setIdentity` call. It is a **dry
-  run** (no network writes) unless a funded wallet and a configured parent name
-  are both present.
+- **End-to-end agent provisioning (not an orphaned helper).** Three composable
+  identity modules in `packages/agents/src/identity/`:
+  - `register-ens-identity.ts` computes the subname, writes ENSIP records, and
+    returns the `ensNode`.
+  - `register-erc8004.ts` (**new**) registers the agent in the ERC-8004
+    `IdentityRegistry` (`register(string agentURI)` → mints the identity NFT),
+    resolving the registry address/chain from env or the cited EF deployment map
+    (`KNOWN_IDENTITY_REGISTRIES`, default Arc Testnet 5042002) — **no invented
+    addresses**.
+  - `provision-agent.ts` (**new**) orchestrates both into the full flow:
+    **ERC-8004 register → ENS subname + records (the ENSIP-25 attestation
+    references the freshly-minted `erc8004Id`) → assemble the exact
+    `AgentIdentityExtension.setIdentity(ensNode, erc8004Id, ensName)` args.**
+  All three are **dry-run safe**: with a `null` wallet (or no resolved
+  registry/parent) they return the would-be plan/calldata and never touch the
+  network, and the overall result is `dryRun:true` if either sub-step was a dry
+  run — so the binding args are never presented as executed.
+- **First-party CLI** — `packages/agents/src/scripts/register-first-party-agents.ts`
+  (bin `actflow-register-agents`) runs `provisionAgent` for `swap-agent`,
+  `research-agent`, and `actle`, printing the identity table (or `--json`). It is
+  a labeled dry run until ENS parent + a funded `AGENT_PROVISION_PRIVATE_KEY` +
+  resolved registry are all present.
+- **API orchestration — `POST /agents/provision`** (`apps/api/src/agents/provisioning/`):
+  the API locates an existing agent, calls `@actflow/agents provisionAgent`
+  (ERC-8004 register → ENS subname/records), then — when a configured admin
+  signer + `AgentIdentityExtension` address + RPC are present — writes
+  `AgentIdentityExtension.setIdentityFor(agent, ensNode, erc8004Id, ensName)`
+  **on-chain** via the owner-only backend path, and persists
+  `ensName`/`ensNode`/`erc8004Id`/`identityStatus` on the agent record. With no
+  signer/creds it returns a labeled `identityStatus:'dry-run'` preview and sends
+  no tx. 5 provisioning tests in `apps/api/test/provisioning.test.mjs`.
 - **MCP discovery** — `packages/mcp/src/tools/resolve-ens-agent.tool.ts` exposes
   `resolve-ens-agent`, resolving an agent's ENS name to its full `AgentProfile`,
-  alongside `search-agents` / `search-tasks` and the `agent://`,
-  `agent-metadata://`, `task://` resources.
-- **Frontend ENS everywhere** — `/discover` and `/agent/[id]` render agents by
-  ENS name and show their ENS records (`apps/web/.../agent/[id]/_components/EnsRecordsSection.tsx`,
-  `apps/web/lib/config/ens.ts`, `hooks/use-agent-ens.ts`). The configured parent
-  name lives in config, not in code.
+  alongside `search-agents` / `search-tasks`, `get-agent-reputation`,
+  `hire-agent`, and the `agent://`, `agent-metadata://`, `task://` resources (see
+  the MCP section below).
+- **Frontend ENS everywhere + the add-agent wizard** — `/discover` and
+  `/agent/[id]` render agents by ENS name and show their ENS records
+  (`apps/web/.../agent/[id]/_components/EnsRecordsSection.tsx`,
+  `apps/web/lib/config/ens.ts`, `hooks/use-agent-ens.ts`). The **add-agent
+  wizard** (`apps/web/.../agent/add/`) now provisions identity inline: after
+  creating the agent it calls `POST /agents/provision` (via
+  `lib/service/provisioningService.ts`) and renders the result in
+  `AgentProvisionResult.tsx` — the ENS name, ERC-8004 id, registry address,
+  network, the `setIdentity` binding, and the written ENS records — with an
+  honest **"Live (on-chain)" vs "Preview (no funds)"** badge driven by the API's
+  `identityStatus` / `provisionDryRun` (it never implies a mint that did not
+  happen). The configured parent name lives in config, not in code.
 
 **How it meets the hard requirements.** ENS code written this weekend ✓;
 functional (live resolution proven) ✓; clearly improves agent
@@ -128,11 +170,60 @@ identity/discoverability (resolution + MCP + frontend + on-chain binding) ✓;
 **NO hard-coded values** — every name/address/chain id is config-driven, and the
 contract takes opaque caller-supplied identity ✓.
 
-**Live vs gated.** Resolution, records assembly, the MCP tool, the contract, and
-the frontend are all live. The only gated piece is **minting a real subname on
-Sepolia**, which needs Sepolia funds + a funded `DEPLOYER_PRIVATE_KEY`; the mint
-path is built and unit-tested (`sepolia-mint.test.ts`) and runs the moment those
-are provided.
+**Live vs gated.** Resolution, records assembly, the MCP tools, the contract, the
+full provisioning orchestration (`POST /agents/provision` → `provisionAgent` →
+ERC-8004 register + ENS records + `setIdentity` args), and the wizard UI are all
+live and exercised. The gated pieces are the **on-chain writes**: minting a real
+subname / sending `register()` / `setIdentityFor()` need funds + the
+corresponding signer (Sepolia funds + `DEPLOYER_PRIVATE_KEY` for the subname
+mint; `AGENT_IDENTITY_ADMIN_PRIVATE_KEY` + `AGENT_IDENTITY_EXTENSION_ADDRESS` +
+RPC for the binding; a funded `AGENT_PROVISION_PRIVATE_KEY` + resolved
+`ERC8004_IDENTITY_REGISTRY` for the ERC-8004 mint). Every code path is built and
+unit-tested (incl. `sepolia-mint.test.ts`) and flips to a real tx the moment
+those are provided — the decision/preview is always produced, only settlement is
+gated.
+
+---
+
+### MCP — agent discovery + hire surface (cross-cutting) — **DONE (5 tools)**
+
+`packages/mcp` (`@actflow/mcp`) is a Model Context Protocol server that exposes
+the ActFlow marketplace to **external agents** so a third-party agent can
+discover → vet → hire an ActFlow agent over MCP. The tool registry
+(`src/tools/index.ts`) now registers **5 tools** (10 tests in
+`src/tools/tools.test.ts`); each lives in its own file with an identical
+registrar shape, and **none hard-codes an address, price, or chain id** — every
+tool relays exactly what the backing service returns:
+
+1. **`search-agents`** — search the agent catalog via the ActFlow API
+   (`MarketApiClient`), returning matching agents.
+2. **`search-tasks`** — search marketplace tasks via the ActFlow API.
+3. **`resolve-ens-agent`** — resolve an agent's **ENS name *or* `0x` address** to
+   its full `AgentProfile`. A name resolves directly; an address is
+   reverse-resolved to a name first. All chain/RPC config comes from
+   `@actflow/integrations-ens` (loaded via dynamic import because it is ESM-only).
+4. **`get-agent-reputation`** (**new**) — fetch an agent's ERC-8004 reputation by
+   address from the **`@actflow/reputation` service** (`GET
+   {REPUTATION_URL}/agents/:address/reputation`, default
+   `http://localhost:3402`). Returns the `RankedAgent` (score, breakdown, x402
+   flag, validations, and `source: live|fixture`). The reputation service is
+   optional infra, so an unreachable service degrades to `{ available:false,
+   reason }` rather than failing, and a 404 surfaces as `{ found:false }` — fully
+   usable with no creds because the service runs in fixture mode by default.
+5. **`hire-agent`** (**new**) — hire an ActFlow agent via the payment flow
+   (`POST {API_BASE_URL}/payments/hire`, default `http://localhost:3401`). It
+   **does not sign or fabricate any payment**; it relays exactly what the server
+   returns: an HTTP **402 x402 payment challenge** (which the hirer then settles
+   via `/payments/settle`) **or**, when a valid `worldNullifier` with a remaining
+   free trial is supplied, a **200 World-trial free unlock**. Both outcomes are
+   surfaced verbatim with their HTTP status so the caller can branch; both are
+   mock-safe (the server settles x402 in labeled mock mode and the trial receipt
+   is `mock:true`) so no funds/creds are needed to exercise the tool.
+
+Together these turn MCP into the full discover → reputation-check → hire loop:
+`search-agents`/`resolve-ens-agent` find the agent, `get-agent-reputation` scores
+it (ERC-8004 via the reputation service), and `hire-agent` initiates the x402 /
+World-trial payment — all over MCP, all config-driven.
 
 ---
 
@@ -223,23 +314,34 @@ EIP-3009 layer plus a config-driven escrow deploy.
   canonical `TransferWithAuthorization` EIP-712 typed data, signs it, builds the
   402 challenge, and verifies/settles (`eip3009.ts`, `sign.ts`, `verify.ts`,
   `challenge.ts`). 29 tests passing.
-- **Payments flow in the API** — `apps/api/src/payments`:
+- **Payments flow in the API — the unlock is now BINDING** — `apps/api/src/payments`:
   **`POST /payments/hire`** issues a 402 challenge (or unlocks free via a World
   trial), **`POST /payments/settle`** verifies the signed authorization and
-  unlocks the task + writes a receipt, **`GET /payments/receipts`** lists
-  receipts. Chain/USDC/explorer all come from the SDK — nothing hard-coded.
+  writes a receipt, **`GET /payments/receipts`** lists receipts. Crucially, a
+  settled x402 payment **or** a consumed World free-trial now **actually unlocks
+  the task**: `TaskUnlockService` (the `UnlockTaskHook` passed into
+  `PaymentsService.hire`/`settle`) calls `TaskService.unlockTask(resource)` to
+  mark the matching task record unlocked/funded and ties the receipt back onto it
+  via `attachUnlockReceipt` — so a paid (or trial-unlocked) task proceeds and an
+  **unpaid task stays locked** (an explicit "UNPAID task is NOT unlocked" test
+  proves it). The marketplace-side decision is real; only on-chain escrow
+  settlement is optional/mocked. Chain/USDC/explorer all come from the SDK —
+  nothing hard-coded. 12 payments tests in `apps/api/test/payments.test.mjs`.
   Frontend hire flow in `apps/web/.../agent/[id]/hire` + `hooks/use-hire-payment.ts`.
 
 **How it meets the hard requirements.** Agent-to-agent gas-free USDC
 micropayments on Arc ✓; working frontend + backend ✓; repo link ✓ (architecture
 diagram + video to accompany the booth demo).
 
-**Live vs gated — stated honestly.** A labeled **MOCK settlement** path runs
-without funds or keys (`X402_FORCE_MOCK`; the `mock` flag is carried end-to-end
-so it is **never** presented as a real on-chain payment). Live settlement flips
-on with Arc faucet USDC + a funded deployer/payer key (and Privy app-id for
-agent wallets). Every on-chain artifact gets appended to the tx-hash log in
-`PRIZE-TRACKER.md`.
+**Live vs gated — stated honestly.** The **task-unlock decision is real and
+live** (a settled payment / consumed trial actually flips the task record; an
+unpaid one does not). What stays gated is the **on-chain settlement**: a labeled
+**MOCK settlement** path runs without funds or keys (`X402_FORCE_MOCK`; the
+`mock` flag is carried end-to-end so it is **never** presented as a real
+on-chain payment, and the mock receipt has `txHash` unset). Live on-chain
+settlement flips on with Arc faucet USDC + a funded deployer/payer key (and Privy
+app-id for agent wallets). Every on-chain artifact gets appended to the tx-hash
+log in `PRIZE-TRACKER.md`.
 
 ---
 
@@ -327,9 +429,10 @@ parties are shielded**.
   env-only; chain id / token are env-driven (Arc USDC default is the cited
   `@actflow/sdk` constant); Unlink's own contract addresses are resolved by the
   SDK from the selected environment, never inlined.
-- **Tests** — 24 in the package (config/mock/validation) + 6 in agents
-  (`withdraw-earnings-privately.test.ts`), all offline. The agents suite went
-  **42 → 48** with no regressions.
+- **Tests** — 24 in the package (config/mock/validation) + tests in agents
+  (`withdraw-earnings-privately.test.ts`), all offline. The agents suite is now
+  **62 passing** (Unlink payouts + identity provisioning + tools) with no
+  regressions.
 
 **Before / after.**
 
@@ -475,10 +578,13 @@ an injected wallet provider — it never fabricates a quote or a tx hash.
 ## How to verify our claims
 
 - **Continuity:** the tag chain `monorepo-assembled → phase2-ens →
-  phase3-reputation → phase4-payments → phase5-worldid`, plus `PROVENANCE.md`
-  (7 repos + commits) and `PRIZE-TRACKER.md` (evidence log + blockers).
-- **Tests:** `pnpm test` (per-package: contracts 37, agents 48, ens 28, uniswap
-  25, privy 22, unlink 24, x402 29, reputation 35, api 19).
+  phase3-reputation → phase4-payments → phase5-worldid → phase6-unlink`, plus
+  `PROVENANCE.md` (7 repos + commits) and `PRIZE-TRACKER.md` (evidence log +
+  blockers).
+- **Tests:** `pnpm test` — ~331 tests / 25 suites (per-package: contracts 37,
+  agents 62, mcp 10, ens 28, uniswap 25, privy 22, unlink 24, x402 29,
+  reputation 35, api 28, web 37) — and `pnpm hackathon:e2e` 5/5. `pnpm build`
+  13/13. CI green on GitHub (`.github/workflows/ci.yml`).
 - **Live evidence:** the Uniswap requestIds and the live ENS resolution entries
   in `PRIZE-TRACKER.md`.
 - **Honesty:** every mock/fixture mode is labeled in code
