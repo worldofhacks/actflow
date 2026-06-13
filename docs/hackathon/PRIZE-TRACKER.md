@@ -11,7 +11,7 @@ Status legend: 🔲 not started · 🟡 in progress · ✅ demo-ready · ⛔ blo
 | Uniswap API | $7K | 🟡 | Valid API key from Uniswap Developer Platform; API used for core functionality; submit developer feedback form | |
 | Arc Agentic Nanopayments | $3.25K | 🔲 | Agent-to-agent gas-free USDC micropayments on Arc; working frontend + backend; architecture diagram; video; repo link | |
 | Privy Agent Wallet | $1.7K | 🔲 | Privy Agent Wallet CLI; agent performs ≥1 onchain action; demo shows agent using wallet/moving assets; written Privy-usage explanation | |
-| World Track C | $2.5K | 🔲 | Existing product ✓; meaningful World ID integration; proof verification in BACKEND or contract; writeup of weekend additions | |
+| World Track C | $2.5K | 🟡 | Existing product ✓; meaningful World ID integration; proof verification in BACKEND or contract; writeup of weekend additions | |
 | Unlink Continuity | $1K | 🔲 | @unlink-xyz/sdk in existing project; ≥1 private primitive; demo shows existing flow running privately; README before/after | |
 
 ## Blockers
@@ -36,6 +36,8 @@ Status legend: 🔲 not started · 🟡 in progress · ✅ demo-ready · ⛔ blo
 | 2026-06-13 | Uniswap swap-agent tool live | wired swapQuote returned real CLASSIC quote, requestId e4Hx-hbCCYcEPzQ=, amountOut 5975340123615612 (10 USDC->WETH mainnet) |
 
 | 2026-06-13 | ERC-8004 reputation service live (fixture) | services/reputation 35/35 tests; SQL pinned to verified registry addrs/topic0; /leaderboard ranks agents w/ scores+x402+validations; flips to live BigQuery on GCP creds |
+
+| 2026-06-13 | World ID server-side verify + trials | apps/api /world/verify (v4 cloud verify, server-only); nullifier WorldTrial store credits 3/human, no re-credit; 11 tests; IDKit v4 widget + server-signed rp_context in hire flow |
 
 ## Tx-hash log
 
