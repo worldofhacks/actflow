@@ -1,6 +1,14 @@
 import type { Config } from 'tailwindcss';
+import { createRequire } from 'node:module';
 import tailwindcssAnimate from 'tailwindcss-animate';
-import tailwindcssMotion from 'tailwindcss-motion';
+
+// Load tailwindcss-motion via require so its CJS build (dist/index.cjs) is used.
+// Its ESM build does `import flattenColorPalette from 'tailwindcss/lib/util/...'`,
+// which under Node's native ESM/CJS interop yields the exports object instead of
+// the function, crashing the build with "flattenColorPalette is not a function".
+const requireCjs = createRequire(import.meta.url);
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const tailwindcssMotion = requireCjs('tailwindcss-motion');
 
 export default {
   darkMode: ['class'],
