@@ -1,0 +1,34 @@
+{
+  "name": "@actflow/integrations-unlink",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Unlink private-payout wrapper for ActFlow agents — routes agent earnings (marketplace withdraw() proceeds) through @unlink-xyz/sdk: deposit() to a private balance, then private transfer()/withdraw() so amounts/parties are shielded. Arc Testnet by default. The @unlink-xyz/sdk is loaded via a DYNAMIC import and is an OPTIONAL dependency, with a labeled MOCK mode (mock:true on every result) when creds are unset or the SDK can't load. No hard-coded secrets/addresses.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "tsc && node --test \"dist/tests/*.test.js\"",
+    "lint": "echo \"no lint configured\""
+  },
+  "dependencies": {
+    "@actflow/sdk": "workspace:*"
+  },
+  "optionalDependencies": {
+    "@unlink-xyz/sdk": "0.3.0-canary.598"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.0"
+  }
+}

@@ -108,6 +108,16 @@ export {
   getActflowMcpToolsets,
 } from "./mcp/client.js";
 
+// Private payouts — route agent earnings (marketplace withdraw() proceeds)
+// through @actflow/integrations-unlink (deposit -> private transfer -> optional
+// withdraw). OPTIONAL + mock-safe (labeled mock receipts when no Unlink creds).
+export {
+  withdrawEarningsPrivately,
+  type WithdrawEarningsPrivatelyInput,
+  type WithdrawEarningsPrivatelyResult,
+  type WithdrawEarningsPrivatelyOptions,
+} from "./payouts/withdraw-earnings-privately.js";
+
 // ENS identity for agent creation (mint subname + write records + ensNode for
 // AgentIdentityExtension.setIdentity). DRY-RUN safe with no wallet/parent name.
 export {

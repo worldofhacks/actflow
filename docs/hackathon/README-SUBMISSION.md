@@ -3,7 +3,7 @@
 **Verified agent marketplace.** AI agents with onchain identity (ENS), onchain
 reputation (ERC-8004 ranked via BigQuery), hireable and paid per-task with
 x402-style USDC micropayments on Circle's Arc — with World ID-gated free trials
-and (planned) private payouts via Unlink.
+and optional private payouts via Unlink (shielded agent earnings).
 
 Public repo: **https://github.com/worldofhacks/actflow**
 
@@ -64,11 +64,12 @@ across the tree):
 ```
 packages/contracts        @actflow/contracts        37 contract tests passing
 packages/sdk              @actflow/sdk              shared ABIs/types/chains/interfaces
-packages/agents           @actflow/agents           42 tests
+packages/agents           @actflow/agents           48 tests
 packages/mcp              @actflow/mcp              MCP server over the ActFlow API
 packages/integrations/ens         @actflow/integrations-ens       28 tests (25 pass, 3 live-gated skip)
 packages/integrations/uniswap     @actflow/integrations-uniswap   25 tests (22 pass, 3 live-gated skip)
 packages/integrations/privy       @actflow/integrations-privy     22 tests
+packages/integrations/unlink      @actflow/integrations-unlink    24 tests
 packages/integrations/x402        @actflow/integrations-x402      29 tests
 services/reputation       @actflow/reputation       35 tests
 apps/api                  api                       19 tests (world 11 + payments 8)
@@ -299,21 +300,62 @@ provisioned World app id / rp id / signer key / api key (provided).
 
 ---
 
-### Unlink — Continuity ($1K) — **PLANNED / IN-PROGRESS (not yet shipped)**
+### Unlink — Continuity ($1K) — **BUILT (private-payout path; live-gated on creds/funds)**
 
-**Honest status: not done.** This is a planned stretch. The intended addition is
-optional **private agent payouts** via `@unlink-xyz/sdk` on Arc — shielding an
-agent's earnings/payment amounts with ≥1 private primitive (deposit/transfer/
-withdraw) on top of the existing x402 settlement flow.
+**What we added.** `packages/integrations/unlink` (`@actflow/integrations-unlink`)
+— a private-payout wrapper that routes an agent's earnings (the marketplace
+`withdraw()` proceeds) through `@unlink-xyz/sdk` so the **payout amount and
+parties are shielded**.
 
-- **Before:** agent payouts settle as plain USDC transfers on Arc — amounts and
-  payees are fully public on-chain.
-- **After (planned):** an opt-in "private payout" toggle routes the settlement
-  through Unlink so the payout amount/recipient is shielded, with the existing
-  hire→settle flow otherwise unchanged.
+- **Wrapper** — `client.ts` exposes `privateDeposit({amount})`,
+  `privateTransfer({toUnlinkAddress, amount})`, and
+  `privateWithdraw({toEvmAddress, amount})` over `@unlink-xyz/sdk/client` +
+  `/admin` using the SKILL's **server/custodial** pattern
+  (`account.fromMnemonic` → `createUnlinkAdmin` → `createUnlinkClient` →
+  `ensureRegistered`), defaulting to Circle's **Arc Testnet** (`arc-testnet`,
+  chain 5042002). The SDK is loaded via a **dynamic import** and is an
+  **optional dependency**, so the package builds/tests even when the canary dep
+  is absent.
+- **Agent wiring** — `packages/agents/src/payouts/withdraw-earnings-privately.ts`
+  adds `withdrawEarningsPrivately()`, which takes the `withdraw()` proceeds and
+  runs **deposit → private transfer to the owner's `unlink1…` address → optional
+  public cash-out**. `@actflow/agents` depends on `@actflow/integrations-unlink`
+  (one direction); the unlink package depends only on `@actflow/sdk` (the
+  dependency-free leaf with the Arc config) — **no dependency cycle** (verified
+  by a clean full `pnpm build`).
+- **No hard-coded secrets/addresses** — `UNLINK_API_KEY` / `UNLINK_MNEMONIC` are
+  env-only; chain id / token are env-driven (Arc USDC default is the cited
+  `@actflow/sdk` constant); Unlink's own contract addresses are resolved by the
+  SDK from the selected environment, never inlined.
+- **Tests** — 24 in the package (config/mock/validation) + 6 in agents
+  (`withdraw-earnings-privately.test.ts`), all offline. The agents suite went
+  **42 → 48** with no regressions.
 
-We are **not** claiming this as complete. It is listed here so the before/after
-is on record; if it does not land it should be judged as planned, not shipped.
+**Before / after.**
+
+- **Before:** agent earnings settle as plain USDC transfers on Arc — the payout
+  amount and payee are fully public on-chain (`withdraw()` proceeds land in the
+  agent wallet, then a public transfer pays the owner).
+- **After:** the same `withdraw()` proceeds are shielded — `deposit()` into a
+  private Unlink balance, then a `transfer()` to the owner's `unlink1…` address
+  whose **sender, recipient, amount, and token are all hidden** by a Groth16
+  zero-knowledge proof, with an optional `withdraw()` to a public EVM address
+  only when cashing out. The rest of the hire→settle flow is unchanged.
+
+**Live vs mock — stated honestly.** `@unlink-xyz/sdk@canary` (**0.3.0-canary.598**)
+installs and imports cleanly, and the live code path is **verified up to the
+network boundary**: the dynamic import of `/client` + `/admin`,
+`account.fromMnemonic` (derives a real `unlink1…` address), `createUnlinkAdmin`,
+and `createUnlinkClient` all succeed and the
+`ensureRegistered`/`depositWithApproval`/`transfer`/`withdraw` methods are
+present. Without creds the wrapper runs in a **deterministic, clearly-labeled
+MOCK mode** (`mock: true`, `status: "mock-processed"`, a `mock-…` `txId`,
+`txHash: null`) so build + tests + demo work with no account/API key/funds. It
+flips to **real private transfers** when `UNLINK_API_KEY` + `UNLINK_MNEMONIC` are
+set; a real end-to-end private transfer additionally needs a funded account and
+(for the deposit) native gas — on Arc Testnet that gas is USDC itself (Circle
+faucet). The single real private transfer for the demo runs once those creds +
+funds are provided.
 
 ---
 
@@ -379,12 +421,19 @@ uniqueness constraint and an anti-replay key. Verification is **server-side**
 (`POST /world/verify` in `apps/api`), trials are keyed to the nullifier, and the
 same proof can never mint extra trials.
 
-### Unlink — before/after (PLANNED)
+### Unlink — before/after
 
-See the Unlink section above. **Before:** Arc payouts are public USDC transfers.
-**After (planned, not yet shipped):** optional Unlink-shielded payouts hide the
-agent's earnings amount/recipient while leaving the hire→settle flow intact.
-Marked planned/in-progress — not claimed as done.
+See the Unlink section above. **Before:** Arc payouts are public USDC transfers —
+amount + payee on-chain for anyone to see. **After:** the agent's `withdraw()`
+proceeds are routed through `@unlink-xyz/sdk`
+(`packages/integrations/unlink` + `withdrawEarningsPrivately` in
+`packages/agents`): deposit → private transfer to the owner's `unlink1…` address
+(sender/recipient/amount/token all hidden by a ZK proof) → optional public
+cash-out, with the hire→settle flow otherwise intact. The wrapper runs in a
+labeled MOCK mode with no creds (so build/tests/demo work offline) and flips to
+real private transfers when `UNLINK_API_KEY` + `UNLINK_MNEMONIC` are set; the
+canary SDK installs/imports cleanly and the live path is verified up to the
+network boundary (see the Unlink section for the live-vs-mock detail).
 
 ### Uniswap — developer-feedback form (draft answers)
 
@@ -428,8 +477,8 @@ an injected wallet provider — it never fabricates a quote or a tx hash.
 - **Continuity:** the tag chain `monorepo-assembled → phase2-ens →
   phase3-reputation → phase4-payments → phase5-worldid`, plus `PROVENANCE.md`
   (7 repos + commits) and `PRIZE-TRACKER.md` (evidence log + blockers).
-- **Tests:** `pnpm test` (per-package: contracts 37, agents 42, ens 28, uniswap
-  25, privy 22, x402 29, reputation 35, api 19).
+- **Tests:** `pnpm test` (per-package: contracts 37, agents 48, ens 28, uniswap
+  25, privy 22, unlink 24, x402 29, reputation 35, api 19).
 - **Live evidence:** the Uniswap requestIds and the live ENS resolution entries
   in `PRIZE-TRACKER.md`.
 - **Honesty:** every mock/fixture mode is labeled in code

@@ -25,6 +25,7 @@
     "@actflow/integrations-ens": "workspace:*",
     "@actflow/integrations-privy": "workspace:*",
     "@actflow/integrations-uniswap": "workspace:*",
+    "@actflow/integrations-unlink": "workspace:*",
     "@actflow/integrations-x402": "workspace:*",
     "@actflow/mcp": "workspace:*",
     "@mastra/core": "^1.42.0",
