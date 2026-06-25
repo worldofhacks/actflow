@@ -25,7 +25,18 @@ export class SetAgentTopicHandler extends BaseEventHandler {
   }
 
   protected async updateEntityState(event: BlockchainEventDocument, update: any): Promise<void> {
-    const decodedTopic = decodeBytes32String(update.topic);
+    // Topics are bytes32 on-chain. Conventionally they are bytes32-encoded
+    // strings (decodable), but an agent may register a keccak-hashed topic —
+    // decodeBytes32String then throws "invalid bytes32 string". The decoded
+    // value is currently unused (the topic-state update is disabled), so a
+    // non-string topic must NEVER crash event processing for the whole batch.
+    let decodedTopic: string | null = null;
+    try {
+      decodedTopic = decodeBytes32String(update.topic);
+    } catch {
+      decodedTopic = update.topic; // keep the raw bytes32 when it isn't a packed string
+    }
+    void decodedTopic;
     // await this.agentService.updateAgentTopics(update.agent, decodedTopic, update.state);
   }
 }

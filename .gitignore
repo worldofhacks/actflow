@@ -28,3 +28,4 @@ typechain-types/
 
 # pending sanitization before publishing (references private-repo secret locations)
 docs/hackathon/CONTRACTS-DIFF.md
+packages/contracts/bcConfig.json
