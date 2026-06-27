@@ -378,19 +378,22 @@ export class UserService {
   }
 
   async registerWallet(body: RegisterAccountWithWalletDTO): Promise<UserDocument> {
-    // on new wallet user creation match if the referrer field matches with the referral code of any user then update the referrer count and if operation fails revert the changes
-    const session = await this.userRepository.startSession();
-    session.startTransaction();
-    try {
-      const hashedPassword = await bcrypt.hash('wallet123', 10);
-      const newUser = await this.userRepository.create({
-        ...body,
-        // this will be the default password for the wallet users
-        password: hashedPassword,
-        referralCode: Math.random().toString(36).substring(2, 8),
-        provider: { type: ProviderType.WALLET, address: body.address },
-      });
-      if (body.referrer) {
+    // No multi-document transaction here: the dev/standalone mongod has no
+    // replica set, so startTransaction() throws. User creation is a single
+    // document; the referral credit is applied best-effort afterwards.
+    // `signature` is verification-only and must NOT be persisted on the user.
+    const { signature: _signature, ...rest } = body;
+    const hashedPassword = await bcrypt.hash('wallet123', 10);
+    const newUser = await this.userRepository.create({
+      ...rest,
+      // default password for wallet users
+      password: hashedPassword,
+      referralCode: Math.random().toString(36).substring(2, 8),
+      provider: { type: ProviderType.WALLET, address: body.address },
+    });
+
+    if (body.referrer) {
+      try {
         const referrer = await this.userRepository.findOne({ referralCode: body.referrer });
         if (referrer) {
           referrer.referralCount++;
@@ -400,15 +403,12 @@ export class UserService {
           });
           await referrer.save();
         }
+      } catch {
+        // best-effort: a failed referral credit must not fail registration
       }
-      await session.commitTransaction();
-      return newUser;
-    } catch (error) {
-      await session.abortTransaction();
-      throw new BadRequestException(error);
-    } finally {
-      await session.endSession();
     }
+
+    return newUser;
   }
 
   async findUserByWalletAddress(address: string, email?: string): Promise<UserDocument> {

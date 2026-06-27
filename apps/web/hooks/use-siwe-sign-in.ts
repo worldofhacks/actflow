@@ -1,37 +1,29 @@
 'use client';
 
-import { getCsrfToken, signIn } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import { useCallback } from 'react';
 import type { Address } from 'viem';
-import { createSiweMessage, generateSiweNonce } from 'viem/siwe';
-import { useChainId, useSignMessage } from 'wagmi';
+import { useSignMessage } from 'wagmi';
+
+import { signWalletNonce } from '@/lib/wallet-auth';
 
 /**
- * Sign-In With Ethereum (EIP-4361).
+ * Sign-In With Ethereum.
  *
- * Builds a SIWE message (nonce = next-auth CSRF token), asks the connected
- * wallet to sign it, then hands message + signature to the `siwe` next-auth
- * credentials provider, which verifies the signature server-side.
+ * Requests the backend's single-use nonce message (POST /auth/wallet/nonce),
+ * asks the connected wallet to sign it, then hands {address, signature} to the
+ * `siwe` next-auth credentials provider, which exchanges them for backend tokens
+ * via POST /auth/wallet/login. The message format MUST match what the backend
+ * issues, so we never build our own SIWE message here.
  */
 export function useSiweSignIn() {
   const { signMessageAsync } = useSignMessage();
-  const chainId = useChainId();
 
   return useCallback(
     async (address: Address, callbackUrl: string = '/discover') => {
-      const nonce = (await getCsrfToken()) ?? generateSiweNonce();
-      const message = createSiweMessage({
-        address,
-        chainId,
-        domain: window.location.host,
-        nonce,
-        uri: window.location.origin,
-        version: '1',
-        statement: 'Sign in to ActFlow with your wallet.',
-      });
-      const signature = await signMessageAsync({ message });
-      return signIn('siwe', { message, signature, callbackUrl });
+      const signature = await signWalletNonce(address, signMessageAsync);
+      return signIn('siwe', { address, signature, callbackUrl });
     },
-    [chainId, signMessageAsync],
+    [signMessageAsync],
   );
 }

@@ -8,11 +8,12 @@ import { Label } from '@/components/ui/label';
 import { useSiweSignIn } from '@/hooks/use-siwe-sign-in';
 import { toast } from '@/hooks/use-toast';
 import { registerUserByWallet } from '@/lib/service/authService';
+import { signWalletNonce } from '@/lib/wallet-auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSearchParams } from 'next/dist/client/components/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useAccount } from 'wagmi';
+import { useAccount, useSignMessage } from 'wagmi';
 import { z } from 'zod';
 
 // Define the form schema with Zod
@@ -28,6 +29,7 @@ export function CompleteProfileForm() {
   const searchParams = useSearchParams();
   const referrer = searchParams.get('referrer');
   const { address } = useAccount();
+  const { signMessageAsync } = useSignMessage();
   const siweSignIn = useSiweSignIn();
 
   const {
@@ -56,8 +58,13 @@ export function CompleteProfileForm() {
       setIsLoading(true);
       const username = data.name.toLowerCase().replace(/\s+/g, '');
 
+      // SIWE: sign the backend's single-use nonce message; /auth/wallet/register
+      // requires this signature (verified server-side against the issued nonce).
+      const signature = await signWalletNonce(address, signMessageAsync);
+
       const response = await registerUserByWallet(
         address,
+        signature,
         data.email,
         username,
         data.name,

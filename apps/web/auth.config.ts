@@ -1,8 +1,5 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { getCsrfToken } from 'next-auth/react';
-import { recoverMessageAddress } from 'viem';
-import { parseSiweMessage, validateSiweMessage } from 'viem/siwe';
 import { fetchWithOutAuth } from './lib/service';
 import { LoginResponse, ProviderType } from './types/auth';
 import { User } from './types/user';
@@ -79,37 +76,24 @@ export const authOptions: NextAuthOptions = {
       id: 'siwe',
       name: 'Sign-In With Ethereum',
       credentials: {
-        message: { label: 'Message', type: 'text' },
+        address: { label: 'Address', type: 'text' },
         signature: { label: 'Signature', type: 'text' },
       },
-      async authorize(credentials, req) {
-        if (!credentials?.message || !credentials?.signature) {
-          throw new Error('Missing SIWE message or signature', { cause: 'AuthenticationError' });
+      async authorize(credentials) {
+        if (!credentials?.address || !credentials?.signature) {
+          throw new Error('Missing wallet address or signature', { cause: 'AuthenticationError' });
         }
 
-        const message = credentials.message;
-        const signature = credentials.signature as `0x${string}`;
-        const fields = parseSiweMessage(message);
+        const address = credentials.address as string;
+        const signature = credentials.signature as string;
 
-        // The nonce is the next-auth CSRF token, bound to the caller's cookies.
-        const nonce = await getCsrfToken({ req: { headers: req.headers } });
-        const isMessageValid = validateSiweMessage({
-          message: fields,
-          nonce: nonce ?? undefined,
-        });
-        if (!isMessageValid || !fields.address) {
-          throw new Error('Invalid SIWE message', { cause: 'AuthenticationError' });
-        }
-
-        const recovered = await recoverMessageAddress({ message, signature });
-        if (recovered.toLowerCase() !== fields.address.toLowerCase()) {
-          throw new Error('Invalid SIWE signature', { cause: 'AuthenticationError' });
-        }
-
-        // Exchange the verified signature for backend API tokens.
+        // The signature is over the backend's single-use nonce message (issued
+        // by POST /auth/wallet/nonce and signed client-side via signWalletNonce).
+        // The backend verifies it against the stored nonce — we do NOT rebuild or
+        // re-validate a SIWE message here (that was the source of the mismatch).
         const login = await fetchWithOutAuth<LoginResponse>(`${API_BASE}/auth/wallet/login`, {
           method: 'POST',
-          body: JSON.stringify({ address: fields.address, message, signature }),
+          body: JSON.stringify({ address, signature }),
         });
         if (!login.success || !login.data?.access_token) {
           throw new Error(login.error ?? 'Wallet authentication failed', {

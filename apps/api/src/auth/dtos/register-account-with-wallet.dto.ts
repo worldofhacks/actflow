@@ -21,9 +21,16 @@ export class RegisterAccountWithWalletDTO {
   @IsString()
   username: string;
 
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  // Roles are NOT supplied by the client (privilege-escalation vector) — the
+  // user schema defaults to [Role.User]. Optional + validated only if present.
+  @IsOptional()
   @IsArray()
   @IsEnum(Role, { each: true })
-  roles: Role[];
+  roles?: Role[];
 
   @IsOptional()
   @IsString()

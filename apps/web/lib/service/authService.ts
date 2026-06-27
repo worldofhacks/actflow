@@ -67,10 +67,24 @@ export const resendVerificationEmail = async (email: string) => {
     body: JSON.stringify({ email }),
   });
 };
+/**
+ * SIWE step 1 — ask the backend to issue a single-use nonce + the exact message
+ * the wallet must sign. Both wallet register and wallet login require a signature
+ * over this server-issued message (see auth.service.ts verifyWalletSignature).
+ */
+export const requestWalletNonce = async (address: string) => {
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/auth/wallet/nonce`;
+  return fetchWithOutAuth<{ address: string; nonce: string; message: string }>(url, {
+    method: 'POST',
+    body: JSON.stringify({ address }),
+  });
+};
+
 // NOTE: roles are intentionally NOT sent from the client — the backend assigns
 // the default role on registration.
 export const registerUserByWallet = async (
   walletAddress: string,
+  signature: string,
   email: string,
   username: string,
   name: string,
@@ -81,6 +95,7 @@ export const registerUserByWallet = async (
     method: 'POST',
     body: JSON.stringify({
       address: walletAddress,
+      signature,
       email,
       username,
       name,
